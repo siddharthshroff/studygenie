@@ -20,7 +20,7 @@ export function Sidebar() {
               <i className="fas fa-brain text-white text-lg"></i>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">StudyGenie</h1>
+              <h1 className="text-xl font-bold text-gray-900">StudySpark</h1>
               <p className="text-sm text-gray-500">AI Study Assistant</p>
             </div>
           </div>
@@ -32,14 +32,14 @@ export function Sidebar() {
             const isActive = location === item.href;
             return (
               <Link key={item.href} href={item.href}>
-                <a className={`flex items-center px-4 py-3 rounded-lg transition-colors font-medium ${
+                <div className={`flex items-center px-4 py-3 rounded-lg transition-colors font-medium cursor-pointer ${
                   isActive
                     ? "text-primary-700 bg-primary-50 border-l-4 border-primary-600"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}>
                   <i className={`${item.icon} w-5 mr-3 ${isActive ? "text-primary-600" : "text-gray-500"}`}></i>
                   <span>{item.label}</span>
-                </a>
+                </div>
               </Link>
             );
           })}
