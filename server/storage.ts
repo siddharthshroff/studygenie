@@ -94,7 +94,8 @@ export class MemStorage implements IStorage {
     const studySet: StudySet = { 
       ...insertStudySet, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      description: insertStudySet.description || null
     };
     this.studySets.set(id, studySet);
     return studySet;
@@ -122,7 +123,11 @@ export class MemStorage implements IStorage {
 
   async createFlashcard(insertFlashcard: InsertFlashcard): Promise<Flashcard> {
     const id = this.currentFlashcardId++;
-    const flashcard: Flashcard = { ...insertFlashcard, id };
+    const flashcard: Flashcard = { 
+      ...insertFlashcard, 
+      id, 
+      order: insertFlashcard.order || 0 
+    };
     this.flashcards.set(id, flashcard);
     return flashcard;
   }
@@ -149,7 +154,11 @@ export class MemStorage implements IStorage {
 
   async createQuizQuestion(insertQuestion: InsertQuizQuestion): Promise<QuizQuestion> {
     const id = this.currentQuizQuestionId++;
-    const question: QuizQuestion = { ...insertQuestion, id };
+    const question: QuizQuestion = { 
+      ...insertQuestion, 
+      id, 
+      order: insertQuestion.order || 0 
+    };
     this.quizQuestions.set(id, question);
     return question;
   }
