@@ -11,8 +11,12 @@ import path from "path";
 // File processing libraries
 import mammoth from "mammoth";
 
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY environment variable is required');
+}
+
 const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "your-openai-api-key"
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 // Configure multer for file uploads
