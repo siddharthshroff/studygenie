@@ -192,7 +192,9 @@ export class MemStorage implements IStorage {
     const file: UploadedFile = { 
       ...insertFile, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      status: insertFile.status || "pending",
+      extractedText: insertFile.extractedText || null
     };
     this.uploadedFiles.set(id, file);
     return file;
