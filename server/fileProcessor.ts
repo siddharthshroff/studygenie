@@ -4,9 +4,9 @@ import mammoth from "mammoth";
 // Sanitize text to remove invalid UTF-8 sequences and control characters
 export function sanitizeText(text: string): string {
   return text
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ') // Replace control characters with spaces
     .replace(/\uFFFD/g, '') // Remove replacement characters
-    .replace(/\s+/g, ' ') // Normalize whitespace
+    .replace(/[\s\n\t]+/g, ' ') // Normalize all whitespace including newlines and tabs
     .trim();
 }
 
