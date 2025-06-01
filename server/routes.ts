@@ -35,6 +35,11 @@ const upload = multer({
   }
 });
 
+// Sanitize text to remove invalid UTF-8 sequences
+function sanitizeText(text: string): string {
+  return text.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').replace(/\uFFFD/g, '');
+}
+
 async function extractTextFromFile(filePath: string, mimeType: string): Promise<string> {
   try {
     switch (mimeType) {
@@ -272,39 +277,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Upload file endpoint
-<<<<<<< HEAD
-  app.post("/api/upload", isAuthenticated, upload.single('file'), async (req, res) => {
-=======
   app.post("/api/upload", isAuthenticated, upload.single('file'), async (req: any, res) => {
->>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-<<<<<<< HEAD
-      // Save userId with the file
-=======
       const userId = req.session.userId;
 
       // Create file record
->>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
       const uploadedFile = await storage.createUploadedFile({
         filename: req.file.filename,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         status: "processing",
-<<<<<<< HEAD
-        userId: req.session.userId // <-- associate file with user
-=======
         userId: userId
->>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
       });
 
       // Extract text asynchronously
       setImmediate(async () => {
         try {
-          const extractedText = await extractTextFromFile(req.file!.path, req.file!.mimetype);
+          const rawText = await extractTextFromFile(req.file!.path, req.file!.mimetype);
+          const extractedText = sanitizeText(rawText);
           await storage.updateUploadedFile(uploadedFile.id, {
             extractedText,
             status: "completed"
@@ -406,15 +400,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all uploaded files with their study materials
   app.get('/api/files', isAuthenticated, async (req: any, res) => {
     try {
-<<<<<<< HEAD
-      // Revert to fetching all files, not filtered by user
-      const files = await storage.getAllUploadedFiles();
-
-=======
       const userId = req.session.userId;
       const files = await storage.getUploadedFiles(userId);
       
->>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
       // Get study sets and associated flashcards/quizzes for each file
       const filesWithStudyMaterials = await Promise.all(
         files.map(async (file) => {

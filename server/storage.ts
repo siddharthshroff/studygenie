@@ -37,16 +37,8 @@ export interface IStorage {
   getUploadedFiles(userId: number): Promise<UploadedFile[]>;
   getUploadedFile(id: number, userId: number): Promise<UploadedFile | undefined>;
   createUploadedFile(file: InsertUploadedFile): Promise<UploadedFile>;
-<<<<<<< HEAD
-  updateUploadedFile(id: number, file: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined>;
-  deleteUploadedFile(id: number): Promise<boolean>;
-
-  // User Uploaded Files methods
-  getUploadedFilesByUser(userId: number): Promise<UploadedFile[]>;
-=======
   updateUploadedFile(id: number, file: Partial<InsertUploadedFile>, userId: number): Promise<UploadedFile | undefined>;
   deleteUploadedFile(id: number, userId: number): Promise<boolean>;
->>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
 }
 
 export class DatabaseStorage implements IStorage {
@@ -176,11 +168,11 @@ export class DatabaseStorage implements IStorage {
     return file;
   }
 
-  async updateUploadedFile(id: number, updateData: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined> {
+  async updateUploadedFile(id: number, updateData: Partial<InsertUploadedFile>, userId: number): Promise<UploadedFile | undefined> {
     const [file] = await db
       .update(uploadedFiles)
       .set(updateData)
-      .where(eq(uploadedFiles.id, id))
+      .where(and(eq(uploadedFiles.id, id), eq(uploadedFiles.userId, userId)))
       .returning();
     return file || undefined;
   }
