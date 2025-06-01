@@ -1,5 +1,7 @@
 import { Link, useLocation } from "wouter";
 
+import Screenshot_2025_05_31_at_7_55_45_PM from "@assets/Screenshot 2025-05-31 at 7.55.45 PM.png";
+
 export function Sidebar() {
   const [location] = useLocation();
 
@@ -17,7 +19,7 @@ export function Sidebar() {
         <div className="flex items-center px-6 py-4 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <img 
-              src="/assets/image_1748746364251.png" 
+              src={Screenshot_2025_05_31_at_7_55_45_PM} 
               alt="StudySpark AI Logo" 
               className="w-10 h-10"
             />
