@@ -35,50 +35,46 @@ async function extractTextFromFile(filePath: string, mimeType: string): Promise<
   try {
     switch (mimeType) {
       case 'application/pdf':
-        try {
-          const pdf = await import('pdf-poppler');
+        return new Promise((resolve, reject) => {
+          const PdfReader = require('pdfreader').PdfReader;
+          const reader = new PdfReader();
           
-          // Convert PDF to text using pdf-poppler
-          const options = {
-            format: 'raw',
-            out_dir: './temp',
-            out_prefix: 'pdf_text',
-            page: null // Extract all pages
-          };
+          let text = '';
+          let lastY = 0;
           
-          const res = await pdf.convert(filePath, options);
-          
-          // Read the generated text files
-          let fullText = '';
-          for (let i = 1; i <= res; i++) {
-            try {
-              const textPath = `./temp/pdf_text-${i}.txt`;
-              if (fs.existsSync(textPath)) {
-                const pageText = fs.readFileSync(textPath, 'utf-8');
-                fullText += pageText + ' ';
-                // Clean up the temporary file
-                fs.unlinkSync(textPath);
-              }
-            } catch (pageError) {
-              console.warn(`Could not read page ${i}:`, pageError);
+          reader.parseFileItems(filePath, (err: any, item: any) => {
+            if (err) {
+              reject(new Error(`PDF parsing failed: ${err.message}`));
+              return;
             }
-          }
-          
-          // Clean up extracted text and normalize whitespace
-          let cleanText = fullText
-            .replace(/\s+/g, ' ')
-            .trim();
-          
-          if (cleanText.length < 50) {
-            throw new Error('PDF appears to contain minimal readable text');
-          }
-          
-          console.log('Extracted PDF text preview:', cleanText.substring(0, 200) + '...');
-          return cleanText;
-        } catch (pdfError) {
-          console.error('PDF parsing error:', pdfError);
-          throw new Error(`Unable to extract text from PDF: ${pdfError.message}`);
-        }
+            
+            if (!item) {
+              // End of file
+              const cleanText = text
+                .replace(/\s+/g, ' ')
+                .trim();
+              
+              if (cleanText.length < 50) {
+                reject(new Error('PDF appears to contain minimal readable text'));
+                return;
+              }
+              
+              console.log('Extracted PDF text preview:', cleanText.substring(0, 200) + '...');
+              resolve(cleanText);
+              return;
+            }
+            
+            if (item.text) {
+              // Add line break if we're on a new line
+              if (item.y > lastY + 1) {
+                text += '\n';
+              }
+              
+              text += item.text + ' ';
+              lastY = item.y;
+            }
+          });
+        });
 
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         const docxResult = await mammoth.extractRawText({ path: filePath });
