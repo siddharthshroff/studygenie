@@ -471,6 +471,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new flashcard
+  app.post('/api/flashcards', isAuthenticated, async (req, res) => {
+    try {
+      const { studySetId, question, answer } = req.body;
+      
+      if (!studySetId || !question || !answer) {
+        return res.status(400).json({ message: "Study set ID, question, and answer are required" });
+      }
+
+      const flashcard = await storage.createFlashcard({
+        studySetId,
+        question,
+        answer,
+        order: 0
+      });
+
+      res.status(201).json(flashcard);
+    } catch (error) {
+      console.error("Error creating flashcard:", error);
+      res.status(500).json({ message: "Failed to create flashcard" });
+    }
+  });
+
+  // Create new quiz question
+  app.post('/api/quiz-questions', isAuthenticated, async (req, res) => {
+    try {
+      const { studySetId, question, options, correctAnswer } = req.body;
+      
+      if (!studySetId || !question || !options || correctAnswer === undefined) {
+        return res.status(400).json({ message: "Study set ID, question, options, and correct answer are required" });
+      }
+
+      const quizQuestion = await storage.createQuizQuestion({
+        studySetId,
+        question,
+        options,
+        correctAnswer,
+        order: 0
+      });
+
+      res.status(201).json(quizQuestion);
+    } catch (error) {
+      console.error("Error creating quiz question:", error);
+      res.status(500).json({ message: "Failed to create quiz question" });
+    }
+  });
+
   // Study Sets CRUD
   app.get("/api/study-sets", async (req, res) => {
     try {
