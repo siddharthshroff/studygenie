@@ -19,57 +19,40 @@ export default function Dashboard() {
   };
 
   const handleSave = () => {
-    if (generatedContent) {
-      setShowSaveDialog(true);
-    }
+    setShowSaveDialog(true);
   };
 
   const handleSaved = () => {
+    setShowSaveDialog(false);
     setGeneratedContent(null);
   };
 
-  const stats = {
-    totalMaterials: studySets.length,
-    flashcardSets: studySets.length,
-    studySessions: 24, // Mock data for now
-  };
-
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-            <p className="text-gray-600">Upload materials and generate AI-powered study content</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors">
-              <i className="fas fa-bell text-lg"></i>
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-500 text-white text-xs rounded-full flex items-center justify-center">
-                2
-              </span>
-            </button>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome to StudySpark
+          </h1>
+          <p className="text-gray-600">
+            Transform your documents into interactive study materials with AI
+          </p>
         </div>
-      </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-auto p-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Study Sets</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalMaterials}</p>
-                <p className="text-sm text-secondary-600 mt-1">
-                  <i className="fas fa-arrow-up text-xs mr-1"></i>
-                  <span>+23%</span> this week
+                <p className="text-2xl font-bold text-gray-900">{studySets.length}</p>
+                <p className="text-xs text-green-600 mt-1">
+                  <span>+{studySets.filter(s => new Date(s.createdAt) > new Date(Date.now() - 7*24*60*60*1000)).length}</span> this week
                 </p>
               </div>
               <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
-                <i className="fas fa-layer-group text-primary-600 text-xl"></i>
+                <i className="fas fa-book text-primary-600 text-xl"></i>
               </div>
             </div>
           </div>
@@ -77,15 +60,16 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Flashcards Created</p>
-                <p className="text-3xl font-bold text-gray-900">847</p>
-                <p className="text-sm text-secondary-600 mt-1">
-                  <i className="fas fa-arrow-up text-xs mr-1"></i>
-                  <span>+156</span> this week
+                <p className="text-sm font-medium text-gray-600">Total Flashcards</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {studySets.reduce((acc, set) => acc + (set.flashcardCount || 0), 0)}
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  <span>+12</span> this week
                 </p>
               </div>
-              <div className="w-12 h-12 bg-secondary-100 rounded-xl flex items-center justify-center">
-                <i className="fas fa-brain text-secondary-600 text-xl"></i>
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <i className="fas fa-layer-group text-blue-600 text-xl"></i>
               </div>
             </div>
           </div>
@@ -94,14 +78,13 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Study Time</p>
-                <p className="text-3xl font-bold text-gray-900">24.5h</p>
-                <p className="text-sm text-secondary-600 mt-1">
-                  <i className="fas fa-arrow-up text-xs mr-1"></i>
+                <p className="text-2xl font-bold text-gray-900">4.2h</p>
+                <p className="text-xs text-purple-600 mt-1">
                   <span>+2.3h</span> this week
                 </p>
               </div>
-              <div className="w-12 h-12 bg-accent-100 rounded-xl flex items-center justify-center">
-                <i className="fas fa-clock text-accent-600 text-xl"></i>
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <i className="fas fa-clock text-purple-600 text-xl"></i>
               </div>
             </div>
           </div>
@@ -228,8 +211,7 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
 
       {/* Save Dialog */}
       {showSaveDialog && generatedContent && (

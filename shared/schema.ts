@@ -56,7 +56,8 @@ export const uploadedFiles = pgTable("uploaded_files", {
   mimeType: text("mime_type").notNull(),
   extractedText: text("extracted_text"),
   status: text("status").notNull().default("pending"), // pending, processing, completed, error
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+  studySetId: integer("study_set_id").references(() => studySets.id),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

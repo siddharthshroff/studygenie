@@ -345,11 +345,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all uploaded files
+  // Get all uploaded files with their study materials
   app.get('/api/files', isAuthenticated, async (req, res) => {
     try {
       const files = await storage.getUploadedFiles();
-      res.json(files);
+      
+      // Get study sets and associated flashcards/quizzes for each file
+      const filesWithStudyMaterials = await Promise.all(
+        files.map(async (file) => {
+          if (file.studySetId) {
+            const studySet = await storage.getStudySet(file.studySetId);
+            if (studySet) {
+              const flashcards = await storage.getFlashcardsByStudySet(studySet.id);
+              const quizQuestions = await storage.getQuizQuestionsByStudySet(studySet.id);
+              
+              return {
+                ...file,
+                studySet: {
+                  ...studySet,
+                  flashcards,
+                  quizQuestions
+                }
+              };
+            }
+          }
+          return file;
+        })
+      );
+      
+      res.json(filesWithStudyMaterials);
     } catch (error) {
       console.error("Error fetching files:", error);
       res.status(500).json({ message: "Failed to fetch files" });
