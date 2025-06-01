@@ -58,12 +58,16 @@ export const uploadedFiles = pgTable("uploaded_files", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const upsertUserSchema = createInsertSchema(users).pick({
-  id: true,
+export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
+  password: true,
   firstName: true,
   lastName: true,
-  profileImageUrl: true,
+});
+
+export const loginUserSchema = createInsertSchema(users).pick({
+  email: true,
+  password: true,
 });
 
 export const insertStudySetSchema = createInsertSchema(studySets).pick({
@@ -94,7 +98,8 @@ export const insertUploadedFileSchema = createInsertSchema(uploadedFiles).pick({
   status: true,
 });
 
-export type UpsertUser = z.infer<typeof upsertUserSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type LoginUser = z.infer<typeof loginUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertStudySet = z.infer<typeof insertStudySetSchema>;
 export type StudySet = typeof studySets.$inferSelect;

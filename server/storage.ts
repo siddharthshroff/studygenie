@@ -1,6 +1,6 @@
 import { 
   users, studySets, flashcards, quizQuestions, uploadedFiles,
-  type User, type UpsertUser, type StudySet, type InsertStudySet,
+  type User, type InsertUser, type StudySet, type InsertStudySet,
   type Flashcard, type InsertFlashcard, type QuizQuestion, type InsertQuizQuestion,
   type UploadedFile, type InsertUploadedFile
 } from "@shared/schema";
@@ -9,9 +9,9 @@ import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
-  getUser(id: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  createUser(user: InsertUser): Promise<User>;
 
   // Study Set methods
   getStudySets(): Promise<StudySet[]>;
@@ -40,7 +40,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
@@ -50,17 +50,10 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
+  async createUser(userData: InsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
       .returning();
     return user;
   }

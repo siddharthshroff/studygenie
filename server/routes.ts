@@ -1,11 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated, hashPassword, verifyPassword } from "./auth";
+import { insertUserSchema, loginUserSchema, insertStudySetSchema, insertFlashcardSchema, insertQuizQuestionSchema } from "@shared/schema";
 import multer from "multer";
 import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
-import { insertStudySetSchema, insertFlashcardSchema, insertQuizQuestionSchema } from "@shared/schema";
 
 // File processing libraries
 import mammoth from "mammoth";
