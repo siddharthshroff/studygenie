@@ -35,8 +35,8 @@ async function extractTextFromFile(filePath: string, mimeType: string): Promise<
   try {
     switch (mimeType) {
       case 'application/pdf':
-        return new Promise((resolve, reject) => {
-          const PdfReader = require('pdfreader').PdfReader;
+        return new Promise(async (resolve, reject) => {
+          const { PdfReader } = await import('pdfreader');
           const reader = new PdfReader();
           
           let text = '';
