@@ -85,6 +85,7 @@ export const insertStudySetSchema = createInsertSchema(studySets).pick({
   title: true,
   description: true,
   fileId: true,
+  userId: true,
 });
 
 export const insertFlashcardSchema = createInsertSchema(flashcards).pick({
@@ -108,6 +109,7 @@ export const insertUploadedFileSchema = createInsertSchema(uploadedFiles).pick({
   mimeType: true,
   extractedText: true,
   status: true,
+  userId: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

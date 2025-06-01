@@ -272,18 +272,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Upload file endpoint
-  app.post("/api/upload", upload.single('file'), async (req, res) => {
+  app.post("/api/upload", isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
+
+      const userId = req.session.userId;
 
       // Create file record
       const uploadedFile = await storage.createUploadedFile({
         filename: req.file.filename,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
-        status: "processing"
+        status: "processing",
+        userId: userId
       });
 
       // Extract text asynchronously
@@ -293,12 +296,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.updateUploadedFile(uploadedFile.id, {
             extractedText,
             status: "completed"
-          });
+          }, userId);
         } catch (error) {
           console.error('Error processing file:', error);
           await storage.updateUploadedFile(uploadedFile.id, {
             status: "error"
-          });
+          }, userId);
         } finally {
           // Clean up uploaded file
           fs.unlink(req.file!.path, () => {});
@@ -313,9 +316,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get file status
-  app.get("/api/files/:id", async (req, res) => {
+  app.get("/api/files/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const file = await storage.getUploadedFile(parseInt(req.params.id));
+      const userId = req.session.userId;
+      const file = await storage.getUploadedFile(parseInt(req.params.id), userId);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
