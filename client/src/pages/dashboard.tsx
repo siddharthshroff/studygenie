@@ -107,59 +107,72 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Main Action Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload Section */}
-          <FileUploader onContentGenerated={handleContentGenerated} />
+        {/* Main Content Tabs */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <Tabs defaultValue="upload" className="w-full">
+            <div className="border-b border-gray-200 px-6 pt-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">Upload & Generate</TabsTrigger>
+                <TabsTrigger value="history">File History</TabsTrigger>
+              </TabsList>
+            </div>
+            
+            <TabsContent value="upload" className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Upload Section */}
+                <FileUploader onContentGenerated={handleContentGenerated} />
 
-          {/* Recent Activity */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <i className="fas fa-history text-secondary-600 mr-3"></i>
-                Recent Activity
-              </h3>
-            </div>
-            <div className="p-6">
-              {isLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="animate-pulse flex space-x-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                      <div className="flex-1 space-y-2">
-                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      </div>
+                {/* Recent Activity */}
+                <div className="bg-gray-50 rounded-xl border border-gray-100 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-4">
+                    <i className="fas fa-history text-secondary-600 mr-3"></i>
+                    Recent Activity
+                  </h3>
+                  {isLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="animate-pulse flex space-x-3">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : studySets.length === 0 ? (
-                <div className="text-center py-8">
-                  <i className="fas fa-upload text-4xl text-gray-300 mb-4"></i>
-                  <p className="text-gray-500">No study sets yet. Upload your first file to get started!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {studySets.slice(0, 3).map((studySet) => (
-                    <div key={studySet.id} className="flex items-start space-x-3">
-                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i className="fas fa-plus text-primary-600 text-sm"></i>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">
-                          Created "{studySet.title}" study set
-                        </p>
-                        <p className="text-xs text-gray-500">{studySet.description}</p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(studySet.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
+                  ) : studySets.length === 0 ? (
+                    <div className="text-center py-8">
+                      <i className="fas fa-upload text-4xl text-gray-300 mb-4"></i>
+                      <p className="text-gray-500">No study sets yet. Upload your first file to get started!</p>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-4">
+                      {studySets.slice(0, 3).map((studySet) => (
+                        <div key={studySet.id} className="flex items-start space-x-3">
+                          <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i className="fas fa-plus text-primary-600 text-sm"></i>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">
+                              Created "{studySet.title}" study set
+                            </p>
+                            <p className="text-xs text-gray-500">{studySet.description}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {new Date(studySet.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="history" className="p-6">
+              <FileHistory />
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* AI Generation Section */}
@@ -216,6 +229,7 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+    </div>
 
       {/* Save Dialog */}
       {showSaveDialog && generatedContent && (
