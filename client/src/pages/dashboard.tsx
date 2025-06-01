@@ -7,12 +7,14 @@ import { FileHistory } from "@/components/file-history";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStudySets } from "@/hooks/use-study-sets";
+import { useAuth } from "@/hooks/useAuth";
 import type { AIGeneratedContent } from "@/lib/types";
 
 export default function Dashboard() {
   const [generatedContent, setGeneratedContent] = useState<AIGeneratedContent | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const { data: studySets = [], isLoading } = useStudySets();
+  const { user } = useAuth();
 
   const handleContentGenerated = (content: AIGeneratedContent) => {
     setGeneratedContent(content);
@@ -38,8 +40,10 @@ export default function Dashboard() {
               <span className="ml-2 text-sm text-gray-500">AI Study Assistant</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Student User</span>
-              <button className="text-sm text-gray-500 hover:text-gray-700">Sign Out</button>
+              <span className="text-sm text-gray-600">
+                {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user?.email || 'User'}
+              </span>
+              <a href="/api/logout" className="text-sm text-gray-500 hover:text-gray-700">Sign Out</a>
             </div>
           </div>
         </div>
