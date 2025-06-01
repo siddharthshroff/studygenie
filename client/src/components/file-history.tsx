@@ -77,13 +77,13 @@ export function FileHistory() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full max-h-screen overflow-hidden">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-900">File History</h2>
         <Badge variant="secondary">{files.length} files</Badge>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] pr-2">
         {files.map((file) => (
           <Card key={file.id} className="border border-gray-200">
             <Collapsible>
