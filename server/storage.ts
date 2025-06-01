@@ -184,10 +184,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id));
   }
 
-  async deleteUploadedFile(id: number): Promise<boolean> {
+  async deleteUploadedFile(id: number, userId: number): Promise<boolean> {
     const result = await db
       .delete(uploadedFiles)
-      .where(eq(uploadedFiles.id, id));
+      .where(and(eq(uploadedFiles.id, id), eq(uploadedFiles.userId, userId)));
     return (result.rowCount || 0) > 0;
   }
 }

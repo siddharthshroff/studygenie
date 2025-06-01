@@ -434,12 +434,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete uploaded file
-  app.delete("/api/files/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/files/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.session.userId;
       const fileId = parseInt(req.params.id);
       
-      // Get the file to find associated study set
-      const file = await storage.getUploadedFile(fileId);
+      // Get the file to find associated study set (with user verification)
+      const file = await storage.getUploadedFile(fileId, userId);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
@@ -450,7 +451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Delete the file record
-      const success = await storage.deleteUploadedFile(fileId);
+      const success = await storage.deleteUploadedFile(fileId, userId);
       if (!success) {
         return res.status(404).json({ error: "File not found" });
       }
