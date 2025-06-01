@@ -35,9 +35,11 @@ async function extractTextFromFile(filePath: string, mimeType: string): Promise<
   try {
     switch (mimeType) {
       case 'application/pdf':
-        // For PDF files, we'll return sample text for demonstration
-        // In a real implementation, you'd use a PDF parsing library
-        return "This is sample text extracted from a PDF file. In a production environment, this would contain the actual text content from your uploaded PDF document.";
+        // Use dynamic import to avoid module loading issues
+        const pdfParse = await import('pdf-parse');
+        const pdfBuffer = fs.readFileSync(filePath);
+        const pdfData = await pdfParse.default(pdfBuffer);
+        return pdfData.text;
 
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         const docxResult = await mammoth.extractRawText({ path: filePath });
