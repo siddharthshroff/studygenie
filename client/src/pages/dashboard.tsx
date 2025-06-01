@@ -187,23 +187,23 @@ export default function Dashboard() {
               <Tabs defaultValue="flashcards" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="flashcards">
-                    Flashcards ({generatedContent.flashcards.length})
+                    Flashcards ({generatedContent.flashcards?.length || 0})
                   </TabsTrigger>
                   <TabsTrigger value="quiz">
-                    Quiz ({generatedContent.quizQuestions.length} questions)
+                    Quiz ({generatedContent.quizQuestions?.length || 0} questions)
                   </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="flashcards" className="mt-6">
                   <FlashcardGrid 
-                    flashcards={generatedContent.flashcards}
+                    flashcards={generatedContent.flashcards || []}
                     isGenerated={true}
                   />
                 </TabsContent>
                 
                 <TabsContent value="quiz" className="mt-6">
                   <QuizView 
-                    questions={generatedContent.quizQuestions}
+                    questions={generatedContent.quizQuestions || []}
                     isGenerated={true}
                   />
                 </TabsContent>

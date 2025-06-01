@@ -150,7 +150,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUploadedFiles(): Promise<UploadedFile[]> {
-    return await db.select().from(uploadedFiles).orderBy(uploadedFiles.createdAt);
+    return await db.select().from(uploadedFiles).orderBy(uploadedFiles.uploadedAt);
   }
 
   async getUploadedFile(id: number): Promise<UploadedFile | undefined> {
