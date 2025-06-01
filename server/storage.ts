@@ -168,11 +168,11 @@ export class DatabaseStorage implements IStorage {
     return file;
   }
 
-  async updateUploadedFile(id: number, updateData: Partial<InsertUploadedFile>, userId: number): Promise<UploadedFile | undefined> {
+  async updateUploadedFile(id: number, updateData: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined> {
     const [file] = await db
       .update(uploadedFiles)
       .set(updateData)
-      .where(and(eq(uploadedFiles.id, id), eq(uploadedFiles.userId, userId)))
+      .where(eq(uploadedFiles.id, id))
       .returning();
     return file || undefined;
   }
@@ -189,14 +189,6 @@ export class DatabaseStorage implements IStorage {
       .delete(uploadedFiles)
       .where(eq(uploadedFiles.id, id));
     return (result.rowCount || 0) > 0;
-  }
-
-  async getUploadedFilesByUser(userId: number): Promise<UploadedFile[]> {
-    return await db
-      .select()
-      .from(uploadedFiles)
-      .where(eq(uploadedFiles.userId, userId))
-      .orderBy(uploadedFiles.uploadedAt);
   }
 }
 

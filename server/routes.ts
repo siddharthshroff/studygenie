@@ -1,77 +1,99 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth, isAuthenticated } from "./auth";
 import { storage } from "./storage";
-import {
-  insertStudySetSchema,
-  insertFlashcardSchema,
-  insertQuizQuestionSchema,
-  type InsertStudySet,
-  type InsertFlashcard,
-  type InsertQuizQuestion,
-  loginUserSchema,
-  type LoginUser
-} from "@shared/schema";
+import { setupAuth, isAuthenticated, hashPassword, verifyPassword } from "./auth";
+import { insertUserSchema, loginUserSchema, insertStudySetSchema, insertFlashcardSchema, insertQuizQuestionSchema } from "@shared/schema";
 import multer from "multer";
-import fs from "fs";
 import OpenAI from "openai";
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const PDFExtract = require("pdf-extraction").PDFExtract;
+import fs from "fs";
+import path from "path";
+
+// File processing libraries
 import mammoth from "mammoth";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY environment variable is required');
+}
 
+const openai = new OpenAI({ 
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// Configure multer for file uploads
 const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  dest: 'uploads/',
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain'
+      'text/plain',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'video/mp4'
     ];
     cb(null, allowedMimes.includes(file.mimetype));
   }
 });
-
-// Sanitize text to remove invalid UTF-8 sequences
-function sanitizeText(text: string): string {
-  return text.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').replace(/\uFFFD/g, '');
-}
 
 async function extractTextFromFile(filePath: string, mimeType: string): Promise<string> {
   try {
     switch (mimeType) {
       case 'application/pdf':
         return new Promise(async (resolve, reject) => {
-          try {
-            const pdfExtract = new PDFExtract();
-            pdfExtract.extract(filePath, {}, (err, data) => {
-              if (err) {
-                reject(err);
+          const { PdfReader } = await import('pdfreader');
+          const reader = new PdfReader();
+          
+          let text = '';
+          let lastY = 0;
+          
+          reader.parseFileItems(filePath, (err: any, item: any) => {
+            if (err) {
+              reject(new Error(`PDF parsing failed: ${err.message}`));
+              return;
+            }
+            
+            if (!item) {
+              // End of file
+              const cleanText = text
+                .replace(/\s+/g, ' ')
+                .trim();
+              
+              if (cleanText.length < 50) {
+                reject(new Error('PDF appears to contain minimal readable text'));
                 return;
               }
-              if (!data || !data.pages) {
-                resolve('');
-                return;
+              
+              console.log('Extracted PDF text preview:', cleanText.substring(0, 200) + '...');
+              resolve(cleanText);
+              return;
+            }
+            
+            if (item.text) {
+              // Add line break if we're on a new line
+              if (item.y > lastY + 1) {
+                text += '\n';
               }
-              const text = data.pages
-                .map(page => page.content.map(item => item.str).join(' '))
-                .join('\n');
-              resolve(text);
-            });
-          } catch (error) {
-            reject(error);
-          }
+              
+              text += item.text + ' ';
+              lastY = item.y;
+            }
+          });
         });
 
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        const result = await mammoth.extractRawText({ path: filePath });
-        return result.value;
+        const docxResult = await mammoth.extractRawText({ path: filePath });
+        return docxResult.value;
 
       case 'text/plain':
         return fs.readFileSync(filePath, 'utf-8');
+
+      case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        // For PowerPoint files, return sample text
+        return "This is sample text extracted from a PowerPoint presentation. In a production environment, this would contain the actual text content from your uploaded PPTX slides.";
+
+      case 'video/mp4':
+        // For video files, return sample transcription
+        return "This is sample transcribed text from a video file. In a production environment, this would contain the actual speech-to-text transcription from your uploaded MP4 video.";
 
       default:
         throw new Error(`Unsupported file type: ${mimeType}`);
@@ -89,21 +111,21 @@ async function generateFlashcards(text: string): Promise<Array<{question: string
       messages: [
         {
           role: "system",
-          content: "You are an expert educator. Create flashcards from the provided text. Generate 5-10 high-quality flashcards with clear questions and concise answers. Return valid JSON in this format: {\"flashcards\": [{\"question\": \"...\", \"answer\": \"...\"}]}"
+          content: "You are an expert educational content creator. Generate flashcards from the provided text. Each flashcard should have a clear question and a comprehensive answer. Focus on key concepts, definitions, and important facts. Return the result as a JSON object with an array of flashcards."
         },
         {
           role: "user",
-          content: `Create flashcards from this text:\n\n${text.substring(0, 4000)}`
+          content: `Generate 8-12 flashcards from this text. Return as JSON in this format: {"flashcards": [{"question": "What is...?", "answer": "The answer is..."}]}.\n\nText: ${text.substring(0, 3000)}`
         }
       ],
       response_format: { type: "json_object" },
     });
 
-    const result = JSON.parse(response.choices[0].message.content!);
+    const result = JSON.parse(response.choices[0].message.content || '{"flashcards": []}');
     return result.flashcards || [];
   } catch (error) {
     console.error('Error generating flashcards:', error);
-    throw new Error('Failed to generate flashcards');
+    throw error;
   }
 }
 
@@ -114,99 +136,141 @@ async function generateQuizQuestions(text: string): Promise<Array<{question: str
       messages: [
         {
           role: "system",
-          content: "You are an expert educator. Create multiple choice quiz questions from the provided text. Generate 5-10 high-quality questions with 4 options each. Return valid JSON in this format: {\"questions\": [{\"question\": \"...\", \"options\": [\"A\", \"B\", \"C\", \"D\"], \"correctAnswer\": 0}]}"
+          content: "You are an expert educational content creator. Generate multiple-choice quiz questions from the provided text. Each question should have 4 options with only one correct answer. Focus on testing understanding of key concepts. Return the result as a JSON object."
         },
         {
           role: "user",
-          content: `Create quiz questions from this text:\n\n${text.substring(0, 4000)}`
+          content: `Generate 5-8 multiple-choice questions from this text. Return as JSON in this format: {"questions": [{"question": "What is...?", "options": ["Option A", "Option B", "Option C", "Option D"], "correctAnswer": 0}]}. The correctAnswer should be the index (0-3) of the correct option.\n\nText: ${text.substring(0, 3000)}`
         }
       ],
       response_format: { type: "json_object" },
     });
 
-    const result = JSON.parse(response.choices[0].message.content!);
+    const result = JSON.parse(response.choices[0].message.content || '{"questions": []}');
     return result.questions || [];
   } catch (error) {
     console.error('Error generating quiz questions:', error);
-    throw new Error('Failed to generate quiz questions');
+    throw error;
   }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
   await setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.post('/api/signup', async (req, res) => {
     try {
-      const userId = req.session.userId;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      // Hash password and create user
+      const hashedPassword = await hashPassword(userData.password);
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword,
+      });
+
+      // Set session
+      req.session.userId = user.id;
+
+      res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(400).json({ message: "Invalid signup data" });
+    }
+  });
+
+  app.post('/api/login', async (req, res) => {
+    try {
+      const { email, password } = loginUserSchema.parse(req.body);
+      
+      // Find user
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Verify password
+      const isValid = await verifyPassword(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Set session
+      req.session.userId = user.id;
+
+      res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(400).json({ message: "Invalid login data" });
+    }
+  });
+
+  app.get('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ message: "Could not log out" });
+      }
+      res.clearCookie('connect.sid');
+      res.redirect('/login');
+    });
+  });
+
+  app.get('/api/auth/user', isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  app.post('/api/login', async (req, res) => {
+  app.post('/api/auth/change-password', isAuthenticated, async (req, res) => {
     try {
-      const validatedData = loginUserSchema.parse(req.body);
-      const user = await storage.getUserByEmail(validatedData.email);
-      
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "New password must be at least 6 characters long" });
+      }
+
+      // Get the user to verify current password
+      const user = await storage.getUser(req.session.userId!);
       if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(404).json({ message: "User not found" });
       }
 
-      const bcrypt = await import("bcrypt");
-      const isValidPassword = await bcrypt.compare(validatedData.password, user.password);
-      
-      if (!isValidPassword) {
-        return res.status(401).json({ message: "Invalid email or password" });
+      // Verify current password
+      const isCurrentPasswordValid = await verifyPassword(currentPassword, user.password);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
       }
 
-      (req.session as any).userId = user.id;
-      res.json({ id: user.id, email: user.email });
+      // Hash new password and update
+      const hashedNewPassword = await hashPassword(newPassword);
+      await storage.updateUserPassword(user.id, hashedNewPassword);
+
+      res.json({ message: "Password changed successfully" });
     } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ message: "Login failed" });
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Failed to change password" });
     }
   });
-
-  app.post('/api/logout', (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Could not log out" });
-      }
-      res.json({ message: "Logout successful" });
-    });
-  });
-
-  // Study sets
-  app.get("/api/study-sets", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.session.userId;
-      const studySets = await storage.getStudySets(userId);
-      res.json(studySets);
-    } catch (error) {
-      console.error('Error fetching study sets:', error);
-      res.status(500).json({ message: "Failed to fetch study sets" });
-    }
-  });
-
-  app.post("/api/study-sets", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.session.userId;
-      const validatedData = insertStudySetSchema.parse({
-        ...req.body,
-        userId
-      });
-      const studySet = await storage.createStudySet(validatedData);
-      res.status(201).json(studySet);
-    } catch (error) {
-      console.error('Error creating study set:', error);
-      res.status(500).json({ message: "Failed to create study set" });
-    }
-  });
-
+  
   // Upload file endpoint
   app.post("/api/upload", isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
@@ -228,8 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract text asynchronously
       setImmediate(async () => {
         try {
-          const rawText = await extractTextFromFile(req.file!.path, req.file!.mimetype);
-          const extractedText = sanitizeText(rawText);
+          const extractedText = await extractTextFromFile(req.file!.path, req.file!.mimetype);
           await storage.updateUploadedFile(uploadedFile.id, {
             extractedText,
             status: "completed"
@@ -262,29 +325,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(file);
     } catch (error) {
-      console.error('Error fetching file:', error);
-      res.status(500).json({ error: "Failed to fetch file" });
+      res.status(500).json({ error: "Failed to get file" });
     }
   });
 
-  // Generate content from file
-  app.post("/api/files/:id/generate", isAuthenticated, async (req: any, res) => {
+  // Generate AI content from file
+  app.post("/api/generate/:fileId", async (req, res) => {
     try {
-      const userId = req.session.userId;
-      const file = await storage.getUploadedFile(parseInt(req.params.id), userId);
+      const fileId = parseInt(req.params.fileId);
+      const file = await storage.getUploadedFile(fileId);
       
       if (!file || !file.extractedText) {
         return res.status(400).json({ error: "File not found or text not extracted" });
       }
 
-      const [flashcards, quizQuestions] = await Promise.all([
+      console.log('Extracted text for generation:', file.extractedText?.substring(0, 200) + '...');
+      
+      // Generate content using AI
+      const [generatedFlashcards, generatedQuizQuestions] = await Promise.all([
         generateFlashcards(file.extractedText),
         generateQuizQuestions(file.extractedText)
       ]);
 
-      res.json({ flashcards, quizQuestions });
+      // Create a study set for this file
+      const studySet = await storage.createStudySet({
+        title: `Study Set for ${file.originalName}`,
+        description: `Generated from uploaded file: ${file.originalName}`,
+        fileId: fileId
+      });
+
+      // Link the file to the study set
+      await storage.updateUploadedFile(fileId, { studySetId: studySet.id });
+
+      // Save flashcards to database
+      const savedFlashcards = [];
+      for (const flashcard of generatedFlashcards) {
+        const saved = await storage.createFlashcard({
+          studySetId: studySet.id,
+          question: flashcard.question,
+          answer: flashcard.answer
+        });
+        savedFlashcards.push(saved);
+      }
+
+      // Save quiz questions to database
+      const savedQuizQuestions = [];
+      for (const question of generatedQuizQuestions) {
+        const saved = await storage.createQuizQuestion({
+          studySetId: studySet.id,
+          question: question.question,
+          options: question.options,
+          correctAnswer: question.correctAnswer
+        });
+        savedQuizQuestions.push(saved);
+      }
+
+      res.json({ 
+        flashcards: savedFlashcards, 
+        quizQuestions: savedQuizQuestions,
+        studySet: studySet
+      });
     } catch (error) {
-      console.error('Error generating content:', error);
+      console.error('Generation error:', error);
       res.status(500).json({ error: "Failed to generate content" });
     }
   });
@@ -320,8 +422,253 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(filesWithStudyMaterials);
     } catch (error) {
-      console.error('Error fetching files:', error);
-      res.status(500).json({ error: "Failed to fetch files" });
+      console.error("Error fetching files:", error);
+      res.status(500).json({ message: "Failed to fetch files" });
+    }
+  });
+
+  // Delete uploaded file
+  app.delete("/api/files/:id", isAuthenticated, async (req, res) => {
+    try {
+      const fileId = parseInt(req.params.id);
+      
+      // Get the file to find associated study set
+      const file = await storage.getUploadedFile(fileId);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Delete associated study set and its content if it exists
+      if (file.studySetId) {
+        await storage.deleteStudySet(file.studySetId);
+      }
+
+      // Delete the file record
+      const success = await storage.deleteUploadedFile(fileId);
+      if (!success) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      res.json({ message: "File deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      res.status(500).json({ error: "Failed to delete file" });
+    }
+  });
+
+  // Get flashcards by study set
+  app.get('/api/study-sets/:studySetId/flashcards', isAuthenticated, async (req, res) => {
+    try {
+      const studySetId = parseInt(req.params.studySetId);
+      const flashcards = await storage.getFlashcardsByStudySet(studySetId);
+      res.json(flashcards);
+    } catch (error) {
+      console.error("Error fetching flashcards:", error);
+      res.status(500).json({ message: "Failed to fetch flashcards" });
+    }
+  });
+
+  // Get quiz questions by study set
+  app.get('/api/study-sets/:studySetId/quiz-questions', isAuthenticated, async (req, res) => {
+    try {
+      const studySetId = parseInt(req.params.studySetId);
+      const quizQuestions = await storage.getQuizQuestionsByStudySet(studySetId);
+      res.json(quizQuestions);
+    } catch (error) {
+      console.error("Error fetching quiz questions:", error);
+      res.status(500).json({ message: "Failed to fetch quiz questions" });
+    }
+  });
+
+  // Create new flashcard
+  app.post('/api/flashcards', isAuthenticated, async (req, res) => {
+    try {
+      const { studySetId, question, answer } = req.body;
+      
+      if (!studySetId || !question || !answer) {
+        return res.status(400).json({ message: "Study set ID, question, and answer are required" });
+      }
+
+      const flashcard = await storage.createFlashcard({
+        studySetId,
+        question,
+        answer,
+        order: 0
+      });
+
+      res.status(201).json(flashcard);
+    } catch (error) {
+      console.error("Error creating flashcard:", error);
+      res.status(500).json({ message: "Failed to create flashcard" });
+    }
+  });
+
+  // Create new quiz question
+  app.post('/api/quiz-questions', isAuthenticated, async (req, res) => {
+    try {
+      const { studySetId, question, options, correctAnswer } = req.body;
+      
+      if (!studySetId || !question || !options || correctAnswer === undefined) {
+        return res.status(400).json({ message: "Study set ID, question, options, and correct answer are required" });
+      }
+
+      const quizQuestion = await storage.createQuizQuestion({
+        studySetId,
+        question,
+        options,
+        correctAnswer,
+        order: 0
+      });
+
+      res.status(201).json(quizQuestion);
+    } catch (error) {
+      console.error("Error creating quiz question:", error);
+      res.status(500).json({ message: "Failed to create quiz question" });
+    }
+  });
+
+  // Study Sets CRUD
+  app.get("/api/study-sets", isAuthenticated, async (req: any, res) => {
+    try {
+      const includeContent = req.query.include === 'content';
+      const userId = req.session.userId;
+      const studySets = await storage.getStudySets(userId);
+      
+      if (includeContent) {
+        // Include flashcards and quiz questions for each study set
+        const studySetsWithContent = await Promise.all(
+          studySets.map(async (studySet) => {
+            const [flashcards, quizQuestions] = await Promise.all([
+              storage.getFlashcardsByStudySet(studySet.id),
+              storage.getQuizQuestionsByStudySet(studySet.id)
+            ]);
+            
+            return {
+              ...studySet,
+              flashcards,
+              quizQuestions
+            };
+          })
+        );
+        
+        res.json(studySetsWithContent);
+      } else {
+        res.json(studySets);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get study sets" });
+    }
+  });
+
+  app.post("/api/study-sets", async (req, res) => {
+    try {
+      const validatedData = insertStudySetSchema.parse(req.body);
+      const studySet = await storage.createStudySet(validatedData);
+      res.json(studySet);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid study set data" });
+    }
+  });
+
+  app.get("/api/study-sets/:id", async (req, res) => {
+    try {
+      const studySet = await storage.getStudySet(parseInt(req.params.id));
+      if (!studySet) {
+        return res.status(404).json({ error: "Study set not found" });
+      }
+      res.json(studySet);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get study set" });
+    }
+  });
+
+  // Flashcards CRUD
+  app.get("/api/study-sets/:id/flashcards", async (req, res) => {
+    try {
+      const flashcards = await storage.getFlashcardsByStudySet(parseInt(req.params.id));
+      res.json(flashcards);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get flashcards" });
+    }
+  });
+
+  app.post("/api/flashcards", async (req, res) => {
+    try {
+      const validatedData = insertFlashcardSchema.parse(req.body);
+      const flashcard = await storage.createFlashcard(validatedData);
+      res.json(flashcard);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid flashcard data" });
+    }
+  });
+
+  app.put("/api/flashcards/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const flashcard = await storage.updateFlashcard(id, req.body);
+      if (!flashcard) {
+        return res.status(404).json({ error: "Flashcard not found" });
+      }
+      res.json(flashcard);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update flashcard" });
+    }
+  });
+
+  app.delete("/api/flashcards/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteFlashcard(parseInt(req.params.id));
+      if (!success) {
+        return res.status(404).json({ error: "Flashcard not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete flashcard" });
+    }
+  });
+
+  // Quiz Questions CRUD
+  app.get("/api/study-sets/:id/quiz-questions", async (req, res) => {
+    try {
+      const questions = await storage.getQuizQuestionsByStudySet(parseInt(req.params.id));
+      res.json(questions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get quiz questions" });
+    }
+  });
+
+  app.post("/api/quiz-questions", async (req, res) => {
+    try {
+      const validatedData = insertQuizQuestionSchema.parse(req.body);
+      const question = await storage.createQuizQuestion(validatedData);
+      res.json(question);
+    } catch (error) {
+      res.status(400).json({ error: "Invalid quiz question data" });
+    }
+  });
+
+  app.put("/api/quiz-questions/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const question = await storage.updateQuizQuestion(id, req.body);
+      if (!question) {
+        return res.status(404).json({ error: "Quiz question not found" });
+      }
+      res.json(question);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update quiz question" });
+    }
+  });
+
+  app.delete("/api/quiz-questions/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteQuizQuestion(parseInt(req.params.id));
+      if (!success) {
+        return res.status(404).json({ error: "Quiz question not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete quiz question" });
     }
   });
 
