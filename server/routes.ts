@@ -522,7 +522,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/study-sets", async (req, res) => {
     try {
       const studySets = await storage.getStudySets();
-      res.json(studySets);
+      
+      // Include flashcards and quiz questions for each study set
+      const studySetsWithContent = await Promise.all(
+        studySets.map(async (studySet) => {
+          const [flashcards, quizQuestions] = await Promise.all([
+            storage.getFlashcardsByStudySet(studySet.id),
+            storage.getQuizQuestionsByStudySet(studySet.id)
+          ]);
+          
+          return {
+            ...studySet,
+            flashcards,
+            quizQuestions
+          };
+        })
+      );
+      
+      res.json(studySetsWithContent);
     } catch (error) {
       res.status(500).json({ error: "Failed to get study sets" });
     }
