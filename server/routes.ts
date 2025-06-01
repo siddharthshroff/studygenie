@@ -298,15 +298,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Extracted text for generation:', file.extractedText?.substring(0, 200) + '...');
       
-      const [flashcards, quizQuestions] = await Promise.all([
+      // Generate content using AI
+      const [generatedFlashcards, generatedQuizQuestions] = await Promise.all([
         generateFlashcards(file.extractedText),
         generateQuizQuestions(file.extractedText)
       ]);
 
-      res.json({ flashcards, quizQuestions });
+      // Create a study set for this file
+      const studySet = await storage.createStudySet({
+        title: `Study Set for ${file.originalName}`,
+        description: `Generated from uploaded file: ${file.originalName}`,
+        fileId: fileId
+      });
+
+      // Save flashcards to database
+      const savedFlashcards = [];
+      for (const flashcard of generatedFlashcards) {
+        const saved = await storage.createFlashcard({
+          studySetId: studySet.id,
+          question: flashcard.question,
+          answer: flashcard.answer
+        });
+        savedFlashcards.push(saved);
+      }
+
+      // Save quiz questions to database
+      const savedQuizQuestions = [];
+      for (const question of generatedQuizQuestions) {
+        const saved = await storage.createQuizQuestion({
+          studySetId: studySet.id,
+          question: question.question,
+          options: question.options,
+          correctAnswer: question.correctAnswer
+        });
+        savedQuizQuestions.push(saved);
+      }
+
+      res.json({ 
+        flashcards: savedFlashcards, 
+        quizQuestions: savedQuizQuestions,
+        studySet: studySet
+      });
     } catch (error) {
       console.error('Generation error:', error);
       res.status(500).json({ error: "Failed to generate content" });
+    }
+  });
+
+  // Get all uploaded files
+  app.get('/api/files', isAuthenticated, async (req, res) => {
+    try {
+      const files = await storage.getUploadedFiles();
+      res.json(files);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+      res.status(500).json({ message: "Failed to fetch files" });
+    }
+  });
+
+  // Get flashcards by study set
+  app.get('/api/study-sets/:studySetId/flashcards', isAuthenticated, async (req, res) => {
+    try {
+      const studySetId = parseInt(req.params.studySetId);
+      const flashcards = await storage.getFlashcardsByStudySet(studySetId);
+      res.json(flashcards);
+    } catch (error) {
+      console.error("Error fetching flashcards:", error);
+      res.status(500).json({ message: "Failed to fetch flashcards" });
+    }
+  });
+
+  // Get quiz questions by study set
+  app.get('/api/study-sets/:studySetId/quiz-questions', isAuthenticated, async (req, res) => {
+    try {
+      const studySetId = parseInt(req.params.studySetId);
+      const quizQuestions = await storage.getQuizQuestionsByStudySet(studySetId);
+      res.json(quizQuestions);
+    } catch (error) {
+      console.error("Error fetching quiz questions:", error);
+      res.status(500).json({ message: "Failed to fetch quiz questions" });
     }
   });
 

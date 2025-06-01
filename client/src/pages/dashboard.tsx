@@ -3,6 +3,7 @@ import { FileUploader } from "@/components/file-uploader";
 import { FlashcardGrid } from "@/components/flashcard-grid";
 import { QuizView } from "@/components/quiz-view";
 import { SaveDialog } from "@/components/save-dialog";
+import { FileHistory } from "@/components/file-history";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStudySets } from "@/hooks/use-study-sets";

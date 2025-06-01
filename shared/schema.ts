@@ -28,6 +28,7 @@ export const studySets = pgTable("study_sets", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
+  fileId: integer("file_id").references(() => uploadedFiles.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -73,6 +74,7 @@ export const loginUserSchema = createInsertSchema(users).pick({
 export const insertStudySetSchema = createInsertSchema(studySets).pick({
   title: true,
   description: true,
+  fileId: true,
 });
 
 export const insertFlashcardSchema = createInsertSchema(flashcards).pick({
