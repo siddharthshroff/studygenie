@@ -38,7 +38,7 @@ export function FileUploader({ onContentGenerated }: FileUploaderProps) {
         
         if (file.status === 'completed') {
           // Generate AI content
-          const contentResponse = await fetch(`/api/generate/${uploadedFile.id}`, {
+          const contentResponse = await fetch(`/api/files/${uploadedFile.id}/generate`, {
             method: 'POST',
           });
           const content = await contentResponse.json() as AIGeneratedContent;
