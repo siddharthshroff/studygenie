@@ -7,6 +7,8 @@ import { Sidebar } from "@/components/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
 import Settings from "@/pages/settings";
+import AllFlashcards from "@/pages/all-flashcards";
+import AllQuizzes from "@/pages/all-quizzes";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import NotFound from "@/pages/not-found";
@@ -41,8 +43,8 @@ function Router() {
         <Route path="/" component={Dashboard} />
         <Route path="/settings" component={Settings} />
         <Route path="/materials" component={Dashboard} />
-        <Route path="/flashcards" component={Dashboard} />
-        <Route path="/quiz" component={Dashboard} />
+        <Route path="/flashcards" component={AllFlashcards} />
+        <Route path="/quiz" component={AllQuizzes} />
         <Route component={NotFound} />
       </Switch>
     </div>
