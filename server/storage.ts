@@ -5,7 +5,7 @@ import {
   type UploadedFile, type InsertUploadedFile
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -15,11 +15,11 @@ export interface IStorage {
   updateUserPassword(id: number, hashedPassword: string): Promise<void>;
 
   // Study Set methods
-  getStudySets(): Promise<StudySet[]>;
-  getStudySet(id: number): Promise<StudySet | undefined>;
+  getStudySets(userId: number): Promise<StudySet[]>;
+  getStudySet(id: number, userId: number): Promise<StudySet | undefined>;
   createStudySet(studySet: InsertStudySet): Promise<StudySet>;
-  updateStudySet(id: number, studySet: Partial<InsertStudySet>): Promise<StudySet | undefined>;
-  deleteStudySet(id: number): Promise<boolean>;
+  updateStudySet(id: number, studySet: Partial<InsertStudySet>, userId: number): Promise<StudySet | undefined>;
+  deleteStudySet(id: number, userId: number): Promise<boolean>;
 
   // Flashcard methods
   getFlashcardsByStudySet(studySetId: number): Promise<Flashcard[]>;
@@ -34,14 +34,19 @@ export interface IStorage {
   deleteQuizQuestion(id: number): Promise<boolean>;
 
   // File methods
-  getUploadedFiles(): Promise<UploadedFile[]>;
-  getUploadedFile(id: number): Promise<UploadedFile | undefined>;
+  getUploadedFiles(userId: number): Promise<UploadedFile[]>;
+  getUploadedFile(id: number, userId: number): Promise<UploadedFile | undefined>;
   createUploadedFile(file: InsertUploadedFile): Promise<UploadedFile>;
+<<<<<<< HEAD
   updateUploadedFile(id: number, file: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined>;
   deleteUploadedFile(id: number): Promise<boolean>;
 
   // User Uploaded Files methods
   getUploadedFilesByUser(userId: number): Promise<UploadedFile[]>;
+=======
+  updateUploadedFile(id: number, file: Partial<InsertUploadedFile>, userId: number): Promise<UploadedFile | undefined>;
+  deleteUploadedFile(id: number, userId: number): Promise<boolean>;
+>>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
 }
 
 export class DatabaseStorage implements IStorage {
@@ -63,12 +68,12 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getStudySets(): Promise<StudySet[]> {
-    return await db.select().from(studySets).orderBy(studySets.createdAt);
+  async getStudySets(userId: number): Promise<StudySet[]> {
+    return await db.select().from(studySets).where(eq(studySets.userId, userId)).orderBy(studySets.createdAt);
   }
 
-  async getStudySet(id: number): Promise<StudySet | undefined> {
-    const [studySet] = await db.select().from(studySets).where(eq(studySets.id, id));
+  async getStudySet(id: number, userId: number): Promise<StudySet | undefined> {
+    const [studySet] = await db.select().from(studySets).where(and(eq(studySets.id, id), eq(studySets.userId, userId)));
     return studySet || undefined;
   }
 
@@ -154,12 +159,12 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount || 0) > 0;
   }
 
-  async getUploadedFiles(): Promise<UploadedFile[]> {
-    return await db.select().from(uploadedFiles).orderBy(uploadedFiles.uploadedAt);
+  async getUploadedFiles(userId: number): Promise<UploadedFile[]> {
+    return await db.select().from(uploadedFiles).where(eq(uploadedFiles.userId, userId)).orderBy(uploadedFiles.uploadedAt);
   }
 
-  async getUploadedFile(id: number): Promise<UploadedFile | undefined> {
-    const [file] = await db.select().from(uploadedFiles).where(eq(uploadedFiles.id, id));
+  async getUploadedFile(id: number, userId: number): Promise<UploadedFile | undefined> {
+    const [file] = await db.select().from(uploadedFiles).where(and(eq(uploadedFiles.id, id), eq(uploadedFiles.userId, userId)));
     return file || undefined;
   }
 

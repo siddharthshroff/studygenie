@@ -272,19 +272,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Upload file endpoint
+<<<<<<< HEAD
   app.post("/api/upload", isAuthenticated, upload.single('file'), async (req, res) => {
+=======
+  app.post("/api/upload", isAuthenticated, upload.single('file'), async (req: any, res) => {
+>>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
+<<<<<<< HEAD
       // Save userId with the file
+=======
+      const userId = req.session.userId;
+
+      // Create file record
+>>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
       const uploadedFile = await storage.createUploadedFile({
         filename: req.file.filename,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         status: "processing",
+<<<<<<< HEAD
         userId: req.session.userId // <-- associate file with user
+=======
+        userId: userId
+>>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
       });
 
       // Extract text asynchronously
@@ -294,12 +308,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.updateUploadedFile(uploadedFile.id, {
             extractedText,
             status: "completed"
-          });
+          }, userId);
         } catch (error) {
           console.error('Error processing file:', error);
           await storage.updateUploadedFile(uploadedFile.id, {
             status: "error"
-          });
+          }, userId);
         } finally {
           // Clean up uploaded file
           fs.unlink(req.file!.path, () => {});
@@ -314,9 +328,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get file status
-  app.get("/api/files/:id", async (req, res) => {
+  app.get("/api/files/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const file = await storage.getUploadedFile(parseInt(req.params.id));
+      const userId = req.session.userId;
+      const file = await storage.getUploadedFile(parseInt(req.params.id), userId);
       if (!file) {
         return res.status(404).json({ error: "File not found" });
       }
@@ -389,16 +404,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all uploaded files with their study materials
-  app.get('/api/files', isAuthenticated, async (req, res) => {
+  app.get('/api/files', isAuthenticated, async (req: any, res) => {
     try {
+<<<<<<< HEAD
       // Revert to fetching all files, not filtered by user
       const files = await storage.getAllUploadedFiles();
 
+=======
+      const userId = req.session.userId;
+      const files = await storage.getUploadedFiles(userId);
+      
+>>>>>>> a4f7005fd009f9104b4df77fcd2ec62e7d29229d
       // Get study sets and associated flashcards/quizzes for each file
       const filesWithStudyMaterials = await Promise.all(
         files.map(async (file) => {
           if (file.studySetId) {
-            const studySet = await storage.getStudySet(file.studySetId);
+            const studySet = await storage.getStudySet(file.studySetId, userId);
             if (studySet) {
               const flashcards = await storage.getFlashcardsByStudySet(studySet.id);
               const quizQuestions = await storage.getQuizQuestionsByStudySet(studySet.id);
@@ -525,10 +546,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Study Sets CRUD
-  app.get("/api/study-sets", async (req, res) => {
+  app.get("/api/study-sets", isAuthenticated, async (req: any, res) => {
     try {
       const includeContent = req.query.include === 'content';
-      const studySets = await storage.getStudySets();
+      const userId = req.session.userId;
+      const studySets = await storage.getStudySets(userId);
       
       if (includeContent) {
         // Include flashcards and quiz questions for each study set
