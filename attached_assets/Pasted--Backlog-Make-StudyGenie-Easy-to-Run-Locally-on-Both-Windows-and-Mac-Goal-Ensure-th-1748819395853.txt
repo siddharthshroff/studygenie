@@ -1,0 +1,66 @@
+## Backlog: Make StudyGenie Easy to Run Locally on Both Windows and Mac
+
+---
+
+### **Goal**
+Ensure that StudyGenie can be easily set up and run by developers on both Windows and macOS, with clear instructions and cross-platform compatibility for all scripts and dependencies.
+
+---
+
+### **Tasks**
+
+#### 1. **Environment Variables**
+- [ ] Use a `.env` file for all environment variables (e.g., `DATABASE_URL`, `OPENAI_API_KEY`).
+- [ ] Document all required environment variables in the README.
+- [ ] Ensure the app loads `.env` automatically (e.g., using `dotenv`).
+
+#### 2. **Cross-Platform Scripts**
+- [ ] Replace any platform-specific environment variable syntax in package.json scripts with [`cross-env`](https://www.npmjs.com/package/cross-env`).
+    - Example:  
+      Instead of  
+      `"dev": "NODE_ENV=development tsx index.ts"`  
+      use  
+      `"dev": "cross-env NODE_ENV=development tsx index.ts"`
+- [ ] Audit all npm scripts for compatibility.
+
+#### 3. **Database Setup**
+- [ ] Provide instructions for setting up a local PostgreSQL or SQLite database on both Windows and Mac.
+- [ ] Include example `DATABASE_URL` values for both platforms in the README.
+- [ ] Add a sample `.env.example` file.
+
+#### 4. **Dependencies**
+- [ ] Ensure all dependencies work on both platforms (no OS-specific binaries unless alternatives are provided).
+- [ ] Document any platform-specific installation steps (e.g., for `node-gyp` or Python if needed).
+
+#### 5. **File Paths**
+- [ ] Use Node’s `path` module for all file paths to avoid issues with path separators (`\` vs `/`).
+- [ ] Test file upload and static file serving on both platforms.
+
+#### 6. **Testing**
+- [ ] Test the full setup and run process on both Windows and Mac.
+- [ ] Document any platform-specific issues and their solutions.
+
+#### 7. **README Updates**
+- [ ] Add a **Quick Start** section for both Windows and Mac.
+- [ ] Add troubleshooting tips for common platform-specific issues.
+- [ ] Include commands for both Command Prompt/PowerShell (Windows) and Terminal (Mac).
+
+#### 8. **Optional: Docker Support**
+- [ ] Provide a `Dockerfile` and `docker-compose.yml` for a fully containerized local setup as an alternative.
+
+---
+
+### **Acceptance Criteria**
+- Developers on both Windows and Mac can:
+  - Clone the repo
+  - Copy `.env.example` to `.env` and fill in values
+  - Run `npm install`
+  - Run `npm run dev`
+  - Access the app locally without errors
+- All scripts and file operations work on both platforms.
+- README is clear and covers both environments.
+
+---
+
+**Note:**  
+Test all changes on both platforms before closing this backlog item.

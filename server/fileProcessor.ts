@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import mammoth from "mammoth";
 
 // Sanitize text to remove invalid UTF-8 sequences and control characters

@@ -1,51 +1,205 @@
 # StudyGenie
 
-StudyGenie is a full-stack web application designed to help students study more effectively by allowing them to upload study materials (PDF, DOCX, TXT, PPTX, MP4), automatically extract content, and generate AI-powered flashcards and quizzes. The app features a modern React frontend styled with Tailwind CSS and a Node.js/Express backend for file processing and API endpoints.
-
----
+An AI-powered study application that transforms your documents into interactive flashcards and quizzes using OpenAI technology.
 
 ## Features
 
-- **Upload Study Materials:** Drag-and-drop or browse to upload PDF, DOCX, TXT, PPTX, or MP4 files.
-- **AI-Generated Flashcards & Quizzes:** Automatically generate flashcards and multiple-choice quizzes using OpenAI GPT.
-- **Flashcard Editor:** Edit, delete, or add flashcards manually.
-- **Save & Organize:** Store flashcard sets locally with titles and timestamps.
-- **Clean UI:** Responsive, modern interface inspired by educational platforms.
+- 📄 **Document Processing**: Upload PDF, DOCX, TXT, PPTX, and MP4 files
+- 🤖 **AI-Generated Content**: Automatically create flashcards and quizzes from your documents
+- 📚 **Study Management**: Organize content into study sets with persistent storage
+- 🔒 **User Authentication**: Secure login and user-specific content
+- 🗂️ **File History**: Track and manage uploaded documents
+- ✏️ **Content Editing**: Add, edit, and delete flashcards and quiz questions
 
----
+## Quick Start
 
-## Installation
+### Prerequisites
 
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/yourusername/studygenie.git
+- **Node.js** (v18 or higher)
+- **PostgreSQL** database
+- **OpenAI API Key** (from https://platform.openai.com/api-keys)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
    cd studygenie
    ```
 
-2. **Install dependencies:**
-   ```sh
+2. **Install dependencies**
+   ```bash
    npm install
    ```
 
----
+3. **Set up environment variables**
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+   
+   # Edit .env with your actual values
+   # Required: DATABASE_URL, OPENAI_API_KEY, SESSION_SECRET
+   ```
 
-## Running the Application
+4. **Set up the database**
+   ```bash
+   # Push the database schema
+   npm run db:push
+   ```
 
-- **Start the development server:**
-  ```sh
-  npm run dev
-  ```
-  This will start both the backend (Express) and the frontend (Vite + React).
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-- **Build for production:**
-  ```sh
-  npm run build
-  ```
+The application will be available at `http://localhost:5000`
 
-- **Run tests:**
-  ```sh
-  npm test
-  ```
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+### Required Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/studygenie` |
+| `OPENAI_API_KEY` | OpenAI API key for content generation | `sk-...` |
+| `SESSION_SECRET` | Secret key for session management | `your-secure-session-secret` |
+
+### Optional Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NODE_ENV` | Environment mode | `development` |
+| `PGHOST` | PostgreSQL host | `localhost` |
+| `PGPORT` | PostgreSQL port | `5432` |
+| `PGUSER` | PostgreSQL username | - |
+| `PGPASSWORD` | PostgreSQL password | - |
+| `PGDATABASE` | PostgreSQL database name | - |
+
+## Cross-Platform Setup
+
+### Windows Setup
+
+1. **Install Node.js**
+   - Download from https://nodejs.org/
+   - Choose the LTS version
+
+2. **Install PostgreSQL**
+   - Download from https://www.postgresql.org/download/windows/
+   - Remember the password you set for the `postgres` user
+
+3. **Set up environment variables**
+   ```cmd
+   # Windows Command Prompt
+   copy .env.example .env
+   notepad .env
+   ```
+
+4. **Example DATABASE_URL for Windows**
+   ```
+   DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/studygenie
+   ```
+
+### macOS Setup
+
+1. **Install Node.js**
+   ```bash
+   # Using Homebrew (recommended)
+   brew install node
+   
+   # Or download from https://nodejs.org/
+   ```
+
+2. **Install PostgreSQL**
+   ```bash
+   # Using Homebrew
+   brew install postgresql
+   brew services start postgresql
+   
+   # Create database
+   createdb studygenie
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   nano .env  # or use your preferred editor
+   ```
+
+4. **Example DATABASE_URL for macOS**
+   ```
+   DATABASE_URL=postgresql://yourusername@localhost:5432/studygenie
+   ```
+
+### Linux Setup
+
+1. **Install Node.js**
+   ```bash
+   # Ubuntu/Debian
+   curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+   sudo apt-get install -y nodejs
+   
+   # Or use your distribution's package manager
+   ```
+
+2. **Install PostgreSQL**
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get install postgresql postgresql-contrib
+   sudo systemctl start postgresql
+   sudo systemctl enable postgresql
+   
+   # Create database
+   sudo -u postgres createdb studygenie
+   ```
+
+## Database Setup
+
+### Local PostgreSQL
+
+1. **Create a database**
+   ```sql
+   -- Connect to PostgreSQL as superuser
+   CREATE DATABASE studygenie;
+   CREATE USER studygenie_user WITH ENCRYPTED PASSWORD 'your_password';
+   GRANT ALL PRIVILEGES ON DATABASE studygenie TO studygenie_user;
+   ```
+
+2. **Update your .env file**
+   ```
+   DATABASE_URL=postgresql://studygenie_user:your_password@localhost:5432/studygenie
+   ```
+
+### Cloud PostgreSQL (Neon, Supabase, etc.)
+
+1. Create a new database instance
+2. Copy the connection string
+3. Update your `.env` file with the provided `DATABASE_URL`
+
+## API Keys Setup
+
+### OpenAI API Key
+
+1. Go to https://platform.openai.com/api-keys
+2. Create an account or sign in
+3. Generate a new API key
+4. Add it to your `.env` file:
+   ```
+   OPENAI_API_KEY=sk-your-api-key-here
+   ```
+
+**Note**: You'll need credits in your OpenAI account for the AI features to work.
+
+## Development Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server with cross-env |
+| `npm run build` | Build for production |
+| `npm run start` | Start production server |
+| `npm run check` | Run TypeScript checks |
+| `npm run db:push` | Push database schema changes |
 
 ---
 
