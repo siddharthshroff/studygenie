@@ -356,6 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const studySet = await storage.createStudySet({
         title: `Study Set for ${file.originalName}`,
         description: `Generated from uploaded file: ${file.originalName}`,
+        userId: userId,
         fileId: fileId
       });
 
