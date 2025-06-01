@@ -114,6 +114,84 @@ async function generateQuizQuestions(text: string): Promise<Array<{question: str
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.post('/api/signup', async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      // Hash password and create user
+      const hashedPassword = await hashPassword(userData.password);
+      const user = await storage.createUser({
+        ...userData,
+        password: hashedPassword,
+      });
+
+      // Set session
+      req.session.userId = user.id;
+
+      res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(400).json({ message: "Invalid signup data" });
+    }
+  });
+
+  app.post('/api/login', async (req, res) => {
+    try {
+      const { email, password } = loginUserSchema.parse(req.body);
+      
+      // Find user
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Verify password
+      const isValid = await verifyPassword(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Set session
+      req.session.userId = user.id;
+
+      res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(400).json({ message: "Invalid login data" });
+    }
+  });
+
+  app.post('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Could not log out" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get('/api/auth/user', isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.session.userId!);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
   
   // Upload file endpoint
   app.post("/api/upload", upload.single('file'), async (req, res) => {
