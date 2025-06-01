@@ -272,18 +272,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Upload file endpoint
-  app.post("/api/upload", upload.single('file'), async (req, res) => {
+  app.post("/api/upload", isAuthenticated, upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      // Create file record
+      // Save userId with the file
       const uploadedFile = await storage.createUploadedFile({
         filename: req.file.filename,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
-        status: "processing"
+        status: "processing",
+        userId: req.session.userId // <-- associate file with user
       });
 
       // Extract text asynchronously
@@ -390,8 +391,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all uploaded files with their study materials
   app.get('/api/files', isAuthenticated, async (req, res) => {
     try {
-      const files = await storage.getUploadedFiles();
-      
+      // Revert to fetching all files, not filtered by user
+      const files = await storage.getAllUploadedFiles();
+
       // Get study sets and associated flashcards/quizzes for each file
       const filesWithStudyMaterials = await Promise.all(
         files.map(async (file) => {

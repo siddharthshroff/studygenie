@@ -39,6 +39,9 @@ export interface IStorage {
   createUploadedFile(file: InsertUploadedFile): Promise<UploadedFile>;
   updateUploadedFile(id: number, file: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined>;
   deleteUploadedFile(id: number): Promise<boolean>;
+
+  // User Uploaded Files methods
+  getUploadedFilesByUser(userId: number): Promise<UploadedFile[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -189,6 +192,14 @@ export class DatabaseStorage implements IStorage {
       .delete(uploadedFiles)
       .where(eq(uploadedFiles.id, id));
     return (result.rowCount || 0) > 0;
+  }
+
+  async getUploadedFilesByUser(userId: number): Promise<UploadedFile[]> {
+    return await db
+      .select()
+      .from(uploadedFiles)
+      .where(eq(uploadedFiles.userId, userId))
+      .orderBy(uploadedFiles.uploadedAt);
   }
 }
 
