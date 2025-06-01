@@ -418,6 +418,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete uploaded file
+  app.delete("/api/files/:id", isAuthenticated, async (req, res) => {
+    try {
+      const fileId = parseInt(req.params.id);
+      
+      // Get the file to find associated study set
+      const file = await storage.getUploadedFile(fileId);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Delete associated study set and its content if it exists
+      if (file.studySetId) {
+        await storage.deleteStudySet(file.studySetId);
+      }
+
+      // Delete the file record
+      const success = await storage.deleteUploadedFile(fileId);
+      if (!success) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      res.json({ message: "File deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      res.status(500).json({ error: "Failed to delete file" });
+    }
+  });
+
   // Get flashcards by study set
   app.get('/api/study-sets/:studySetId/flashcards', isAuthenticated, async (req, res) => {
     try {

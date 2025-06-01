@@ -38,6 +38,7 @@ export interface IStorage {
   getUploadedFile(id: number): Promise<UploadedFile | undefined>;
   createUploadedFile(file: InsertUploadedFile): Promise<UploadedFile>;
   updateUploadedFile(id: number, file: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined>;
+  deleteUploadedFile(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -181,6 +182,13 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ password: hashedPassword })
       .where(eq(users.id, id));
+  }
+
+  async deleteUploadedFile(id: number): Promise<boolean> {
+    const result = await db
+      .delete(uploadedFiles)
+      .where(eq(uploadedFiles.id, id));
+    return (result.rowCount || 0) > 0;
   }
 }
 

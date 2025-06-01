@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, FileText, Calendar, Eye } from "lucide-react";
+import { ChevronDown, FileText, Calendar, Eye, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 import type { UploadedFile, StudySet, Flashcard, QuizQuestion } from "@shared/schema";
 
 interface FileWithStudySet extends UploadedFile {
@@ -22,9 +24,39 @@ export function FileHistory() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [showAnswers, setShowAnswers] = useState<Set<number>>(new Set());
   const [showAllQuestions, setShowAllQuestions] = useState<Set<number>>(new Set());
+  const { toast } = useToast();
 
   const { data: files = [], isLoading } = useQuery<FileWithStudySet[]>({
     queryKey: ['/api/files']
+  });
+
+  const deleteFileMutation = useMutation({
+    mutationFn: async (fileId: number) => {
+      const response = await fetch(`/api/files/${fileId}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete file");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "File deleted",
+        description: "File and associated study materials have been deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete file",
+        variant: "destructive",
+      });
+    },
   });
 
   const toggleExpanded = (fileId: number) => {
@@ -164,6 +196,18 @@ export function FileHistory() {
                           <div>{file.studySet.quizQuestions?.length || 0} quiz questions</div>
                         </div>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteFileMutation.mutate(file.id);
+                        }}
+                        disabled={deleteFileMutation.isPending}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                       <ChevronDown className="h-4 w-4 text-gray-400" />
                     </div>
                   </div>
