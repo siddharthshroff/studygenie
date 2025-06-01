@@ -8,8 +8,8 @@ export function Sidebar() {
   const navItems = [
     { href: "/", label: "Dashboard", icon: "fas fa-chart-line" },
     { href: "/materials", label: "Study Materials", icon: "fas fa-upload" },
-    { href: "/flashcards", label: "Flashcard Sets", icon: "fas fa-layer-group" },
-    { href: "/quiz", label: "Quiz Mode", icon: "fas fa-question-circle" },
+    { href: "/flashcards", label: "All Flashcards", icon: "fas fa-layer-group" },
+    { href: "/quiz", label: "Take Quiz", icon: "fas fa-question-circle" },
   ];
 
   return (
