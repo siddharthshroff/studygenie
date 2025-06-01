@@ -29,8 +29,24 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+      {/* Navigation Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-blue-600">StudySpark AI</h1>
+              <span className="ml-2 text-sm text-gray-500">AI Study Assistant</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">Student User</span>
+              <button className="text-sm text-gray-500 hover:text-gray-700">Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome to StudySpark
@@ -214,14 +230,16 @@ export default function Dashboard() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-16 py-8 border-t border-gray-200 bg-white">
-        <div className="text-center text-gray-500">
-          <p className="text-sm">
-            StudySpark - Transform your documents into interactive study materials
-          </p>
-          <p className="text-xs mt-2">
-            Upload PDFs, Word documents, and more to generate AI-powered flashcards and quizzes
-          </p>
+      <footer className="bg-white border-t border-gray-200 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center text-gray-500">
+            <p className="text-sm">
+              StudySpark - Transform your documents into interactive study materials
+            </p>
+            <p className="text-xs mt-2">
+              Upload PDFs, Word documents, and more to generate AI-powered flashcards and quizzes
+            </p>
+          </div>
         </div>
       </footer>
 

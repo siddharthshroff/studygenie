@@ -35,8 +35,7 @@ function Router() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      <Sidebar />
+    <div className="min-h-screen bg-gray-50">
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/materials" component={Dashboard} />
