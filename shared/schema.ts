@@ -38,7 +38,9 @@ export const flashcards = pgTable("flashcards", {
   question: text("question").notNull(),
   answer: text("answer").notNull(),
   order: integer("order").notNull().default(0),
-});
+}, (table) => ({
+  studySetIdIdx: index("flashcards_study_set_id_idx").on(table.studySetId),
+}));
 
 export const quizQuestions = pgTable("quiz_questions", {
   id: serial("id").primaryKey(),
@@ -47,7 +49,9 @@ export const quizQuestions = pgTable("quiz_questions", {
   options: text("options").array().notNull(),
   correctAnswer: integer("correct_answer").notNull(),
   order: integer("order").notNull().default(0),
-});
+}, (table) => ({
+  studySetIdIdx: index("quiz_questions_study_set_id_idx").on(table.studySetId),
+}));
 
 export const uploadedFiles = pgTable("uploaded_files", {
   id: serial("id").primaryKey(),
@@ -58,7 +62,9 @@ export const uploadedFiles = pgTable("uploaded_files", {
   status: text("status").notNull().default("pending"), // pending, processing, completed, error
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
   studySetId: integer("study_set_id").references(() => studySets.id),
-});
+}, (table) => ({
+  studySetIdIdx: index("uploaded_files_study_set_id_idx").on(table.studySetId),
+}));
 
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,

@@ -10,7 +10,8 @@ export default function AllFlashcards() {
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
   const { data: studySets, isLoading } = useQuery({
-    queryKey: ["/api/study-sets"],
+    queryKey: ["/api/study-sets", "with-content"],
+    queryFn: () => fetch("/api/study-sets?include=content").then(res => res.json()),
   });
 
   const toggleFlippedCard = (cardId: string) => {
