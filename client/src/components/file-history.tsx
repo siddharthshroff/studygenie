@@ -21,6 +21,7 @@ export function FileHistory() {
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [showAnswers, setShowAnswers] = useState<Set<number>>(new Set());
+  const [showAllQuestions, setShowAllQuestions] = useState<Set<number>>(new Set());
 
   const { data: files = [], isLoading } = useQuery<FileWithStudySet[]>({
     queryKey: ['/api/files']
@@ -71,6 +72,16 @@ export function FileHistory() {
       newShowAnswers.add(fileId);
     }
     setShowAnswers(newShowAnswers);
+  };
+
+  const toggleShowAllQuestions = (fileId: number) => {
+    const newShowAllQuestions = new Set(showAllQuestions);
+    if (newShowAllQuestions.has(fileId)) {
+      newShowAllQuestions.delete(fileId);
+    } else {
+      newShowAllQuestions.add(fileId);
+    }
+    setShowAllQuestions(newShowAllQuestions);
   };
 
   const getFileIcon = (mimeType: string) => {
@@ -256,7 +267,7 @@ export function FileHistory() {
                                   </Button>
                                 </div>
                                 
-                                {file.studySet.quizQuestions.slice(0, 3).map((question, index) => {
+                                {(showAllQuestions.has(file.id) ? file.studySet.quizQuestions : file.studySet.quizQuestions.slice(0, 3)).map((question, index) => {
                                   const questionId = `${file.id}-${question.id}`;
                                   const selectedAnswer = selectedAnswers[questionId];
                                   const showAnswer = showAnswers.has(file.id);
@@ -314,9 +325,21 @@ export function FileHistory() {
                                   );
                                 })}
                                 
-                                {file.studySet.quizQuestions.length > 3 && (
-                                  <div className="text-center py-2 text-sm text-gray-500">
+                                {file.studySet.quizQuestions.length > 3 && !showAllQuestions.has(file.id) && (
+                                  <div 
+                                    className="text-center py-2 text-sm text-blue-600 hover:text-blue-800 cursor-pointer underline"
+                                    onClick={() => toggleShowAllQuestions(file.id)}
+                                  >
                                     +{file.studySet.quizQuestions.length - 3} more questions
+                                  </div>
+                                )}
+                                
+                                {showAllQuestions.has(file.id) && file.studySet.quizQuestions.length > 3 && (
+                                  <div 
+                                    className="text-center py-2 text-sm text-blue-600 hover:text-blue-800 cursor-pointer underline"
+                                    onClick={() => toggleShowAllQuestions(file.id)}
+                                  >
+                                    Show fewer questions
                                   </div>
                                 )}
                               </div>
