@@ -35,11 +35,31 @@ async function extractTextFromFile(filePath: string, mimeType: string): Promise<
   try {
     switch (mimeType) {
       case 'application/pdf':
-        // Use dynamic import to avoid module loading issues
-        const pdfParse = await import('pdf-parse');
-        const pdfBuffer = fs.readFileSync(filePath);
-        const pdfData = await pdfParse.default(pdfBuffer);
-        return pdfData.text;
+        try {
+          // Use dynamic import to avoid module loading issues
+          const pdfParse = await import('pdf-parse');
+          const pdfBuffer = fs.readFileSync(filePath);
+          const pdfData = await pdfParse.default(pdfBuffer);
+          
+          // Clean up extracted text and handle encoding issues
+          let cleanText = pdfData.text || '';
+          
+          // Remove excessive special characters and normalize whitespace
+          cleanText = cleanText
+            .replace(/[^\w\s\.\,\!\?\;\:\-\(\)]/g, ' ') // Keep only basic punctuation
+            .replace(/\s+/g, ' ') // Normalize whitespace
+            .trim();
+          
+          if (cleanText.length < 50) {
+            throw new Error('PDF appears to contain minimal readable text');
+          }
+          
+          console.log('Extracted PDF text preview:', cleanText.substring(0, 200) + '...');
+          return cleanText;
+        } catch (pdfError) {
+          console.error('PDF parsing error:', pdfError);
+          throw new Error(`Unable to extract text from PDF: ${pdfError.message}`);
+        }
 
       case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         const docxResult = await mammoth.extractRawText({ path: filePath });
