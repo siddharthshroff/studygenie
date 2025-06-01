@@ -29,6 +29,7 @@ export const studySets = pgTable("study_sets", {
   title: text("title").notNull(),
   description: text("description"),
   fileId: integer("file_id").references(() => uploadedFiles.id),
+  userId: integer("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -62,8 +63,10 @@ export const uploadedFiles = pgTable("uploaded_files", {
   status: text("status").notNull().default("pending"), // pending, processing, completed, error
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
   studySetId: integer("study_set_id").references(() => studySets.id),
+  userId: integer("user_id").references(() => users.id).notNull(),
 }, (table) => ({
   studySetIdIdx: index("uploaded_files_study_set_id_idx").on(table.studySetId),
+  userIdIdx: index("uploaded_files_user_id_idx").on(table.userId),
 }));
 
 export const insertUserSchema = createInsertSchema(users).pick({

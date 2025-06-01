@@ -15,11 +15,11 @@ export interface IStorage {
   updateUserPassword(id: number, hashedPassword: string): Promise<void>;
 
   // Study Set methods
-  getStudySets(): Promise<StudySet[]>;
-  getStudySet(id: number): Promise<StudySet | undefined>;
+  getStudySets(userId: number): Promise<StudySet[]>;
+  getStudySet(id: number, userId: number): Promise<StudySet | undefined>;
   createStudySet(studySet: InsertStudySet): Promise<StudySet>;
-  updateStudySet(id: number, studySet: Partial<InsertStudySet>): Promise<StudySet | undefined>;
-  deleteStudySet(id: number): Promise<boolean>;
+  updateStudySet(id: number, studySet: Partial<InsertStudySet>, userId: number): Promise<StudySet | undefined>;
+  deleteStudySet(id: number, userId: number): Promise<boolean>;
 
   // Flashcard methods
   getFlashcardsByStudySet(studySetId: number): Promise<Flashcard[]>;
@@ -34,11 +34,11 @@ export interface IStorage {
   deleteQuizQuestion(id: number): Promise<boolean>;
 
   // File methods
-  getUploadedFiles(): Promise<UploadedFile[]>;
-  getUploadedFile(id: number): Promise<UploadedFile | undefined>;
+  getUploadedFiles(userId: number): Promise<UploadedFile[]>;
+  getUploadedFile(id: number, userId: number): Promise<UploadedFile | undefined>;
   createUploadedFile(file: InsertUploadedFile): Promise<UploadedFile>;
-  updateUploadedFile(id: number, file: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined>;
-  deleteUploadedFile(id: number): Promise<boolean>;
+  updateUploadedFile(id: number, file: Partial<InsertUploadedFile>, userId: number): Promise<UploadedFile | undefined>;
+  deleteUploadedFile(id: number, userId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
