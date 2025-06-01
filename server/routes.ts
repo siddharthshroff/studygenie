@@ -259,6 +259,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "File not found or text not extracted" });
       }
 
+      console.log('Extracted text for generation:', file.extractedText?.substring(0, 200) + '...');
+      
       const [flashcards, quizQuestions] = await Promise.all([
         generateFlashcards(file.extractedText),
         generateQuizQuestions(file.extractedText)
