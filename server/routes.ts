@@ -36,17 +36,31 @@ async function extractTextFromFile(filePath: string, mimeType: string): Promise<
     switch (mimeType) {
       case 'application/pdf':
         try {
-          // Use dynamic import to avoid module loading issues
-          const pdfParse = await import('pdf-parse');
+          const pdfjsLib = await import('pdfjs-dist');
           const pdfBuffer = fs.readFileSync(filePath);
-          const pdfData = await pdfParse.default(pdfBuffer);
           
-          // Clean up extracted text and handle encoding issues
-          let cleanText = pdfData.text || '';
+          // Load the PDF document
+          const pdf = await pdfjsLib.getDocument({
+            data: new Uint8Array(pdfBuffer),
+            useSystemFonts: true
+          }).promise;
           
-          // Remove excessive special characters and normalize whitespace
-          cleanText = cleanText
-            .replace(/[^\w\s\.\,\!\?\;\:\-\(\)]/g, ' ') // Keep only basic punctuation
+          let fullText = '';
+          
+          // Extract text from each page
+          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const textContent = await page.getTextContent();
+            
+            const pageText = textContent.items
+              .map((item: any) => item.str)
+              .join(' ');
+            
+            fullText += pageText + '\n';
+          }
+          
+          // Clean up extracted text
+          let cleanText = fullText
             .replace(/\s+/g, ' ') // Normalize whitespace
             .trim();
           
