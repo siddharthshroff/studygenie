@@ -43,6 +43,7 @@ export function FileUploader({ onContentGenerated }: FileUploaderProps) {
           });
           const content = await contentResponse.json() as AIGeneratedContent;
           
+          console.log('Generated content:', content);
           onContentGenerated(content);
           setIsProcessing(false);
           setUploadProgress(0);
