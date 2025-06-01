@@ -1,0 +1,63 @@
+Build a full-stack web app called **StudyGenie** to help students study more effectively.
+
+### Core Features:
+1. **Upload Study Materials**
+   - Accept file uploads in the following formats:
+     - PDF
+     - DOCX
+     - TXT
+     - PPTX
+     - MP4 (videos)
+   - Use a drag-and-drop uploader and a browse button.
+   - Backend should extract text from these formats:
+     - For PDFs and DOCX, extract raw text.
+     - For MP4, use speech-to-text (you can use a stub/mock if needed for now).
+     - For PPTX, extract text from slides.
+
+2. **AI-Generated Flashcards and Quizzes**
+   - After upload, process the extracted text and send it to OpenAI GPT API to generate:
+     - Flashcards in `Q: / A:` format.
+     - 4-option multiple-choice quiz questions.
+   - Display flashcards in a card layout with front/back flipping.
+   - Display quizzes with radio button answers.
+
+3. **Flashcard Editor**
+   - Allow users to:
+     - Edit the generated flashcards.
+     - Delete any flashcard.
+     - Add new ones manually.
+
+4. **Finalize and Save**
+   - After editing, allow users to save their set locally (or in-memory if no backend DB is used).
+   - Store each set with a title and timestamp.
+
+### Tech Stack:
+- **Frontend:** React + Tailwind CSS
+- **Backend:** Node.js + Express (or Python Flask if easier)
+- **File Upload:** Multer or equivalent
+- **Text Extraction Libraries:**
+  - `pdf-parse` for PDFs
+  - `mammoth` or `docx-parser` for DOCX
+  - `pptx-parser` for PowerPoints
+  - `speech-to-text` (stub or external API like AssemblyAI for MP4s)
+
+### Optional Enhancements:
+- Add a quiz game mode with timer.
+- Export flashcards as CSV.
+- Use localStorage for persistence if no database is set up.
+- Add login later, but for now assume one user.
+
+### UI Reference:
+Use the uploaded screenshot as UI inspiration. Key sections:
+- Left sidebar navigation: Dashboard, Study Materials, Flashcard Sets.
+- Central area with:
+  - Upload box
+  - AI-generated flashcard preview
+  - Manual edit option
+  - Finalize & Save button
+
+### Deliverables:
+- Working web app in Replit
+- All components styled cleanly using Tailwind
+- Code should be modular and readable
+
