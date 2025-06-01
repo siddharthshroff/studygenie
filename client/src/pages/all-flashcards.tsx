@@ -31,8 +31,8 @@ export default function AllFlashcards() {
     );
   }
 
-  const allFlashcards = studySets?.reduce((acc: any[], studySet: any) => {
-    if (studySet.flashcards) {
+  const allFlashcards = studySets ? studySets.reduce((acc: any[], studySet: any) => {
+    if (studySet.flashcards && Array.isArray(studySet.flashcards)) {
       const flashcardsWithStudySet = studySet.flashcards.map((flashcard: any) => ({
         ...flashcard,
         studySetTitle: studySet.title
@@ -40,7 +40,7 @@ export default function AllFlashcards() {
       return [...acc, ...flashcardsWithStudySet];
     }
     return acc;
-  }, []) || [];
+  }, []) : [];
 
   return (
     <div className="min-h-screen bg-gray-50">

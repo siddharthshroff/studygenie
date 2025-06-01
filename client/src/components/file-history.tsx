@@ -224,33 +224,32 @@ export function FileHistory() {
                         <p className="text-sm text-gray-600">{file.studySet.description}</p>
                       </div>
 
-                      {(file.studySet.flashcards?.length > 0 || file.studySet.quizQuestions?.length > 0) && (
-                        <Tabs defaultValue="flashcards" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="flashcards">
-                              Flashcards ({file.studySet.flashcards?.length || 0})
-                            </TabsTrigger>
-                            <TabsTrigger value="quiz">
-                              Quiz ({file.studySet.quizQuestions?.length || 0})
-                            </TabsTrigger>
-                          </TabsList>
+                      <Tabs defaultValue="flashcards" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="flashcards">
+                            Flashcards ({file.studySet.flashcards?.length || 0})
+                          </TabsTrigger>
+                          <TabsTrigger value="quiz">
+                            Quiz ({file.studySet.quizQuestions?.length || 0})
+                          </TabsTrigger>
+                        </TabsList>
 
-                          <TabsContent value="flashcards" className="mt-4">
-                            <div className="flex justify-between items-center mb-4">
-                              <span className="text-sm text-gray-600">
-                                {file.studySet.flashcards?.length || 0} flashcards
-                              </span>
-                              <AddContentDialog
-                                studySetId={file.studySet.id}
-                                type="flashcard"
-                                trigger={
-                                  <Button variant="outline" size="sm">
-                                    <Plus className="h-4 w-4 mr-1" />
-                                    Add Flashcard
-                                  </Button>
-                                }
-                              />
-                            </div>
+                        <TabsContent value="flashcards" className="mt-4">
+                          <div className="flex justify-between items-center mb-4">
+                            <span className="text-sm text-gray-600">
+                              {file.studySet.flashcards?.length || 0} flashcards
+                            </span>
+                            <AddContentDialog
+                              studySetId={file.studySet.id}
+                              type="flashcard"
+                              trigger={
+                                <Button variant="outline" size="sm">
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Add Flashcard
+                                </Button>
+                              }
+                            />
+                          </div>
                             {file.studySet.flashcards && file.studySet.flashcards.length > 0 ? (
                               <div className="space-y-4">
                                 <div className="grid gap-4 md:grid-cols-2">
@@ -420,7 +419,6 @@ export function FileHistory() {
                             )}
                           </TabsContent>
                         </Tabs>
-                      )}
                     </div>
                   ) : (
                     <div className="text-center py-4">

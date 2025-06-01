@@ -52,12 +52,24 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome to StudySpark
-          </h1>
-          <p className="text-gray-600">
-            Transform your documents into interactive study materials with AI
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome to StudySpark
+              </h1>
+              <p className="text-gray-600">
+                Transform your documents into interactive study materials with AI
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => window.location.href = '/flashcards'}>
+                View All Flashcards
+              </Button>
+              <Button variant="outline" onClick={() => window.location.href = '/quiz'}>
+                Take Quiz
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
