@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
+import Settings from "@/pages/settings";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import NotFound from "@/pages/not-found";
@@ -38,6 +39,7 @@ function Router() {
     <div className="min-h-screen bg-gray-50">
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/settings" component={Settings} />
         <Route path="/materials" component={Dashboard} />
         <Route path="/flashcards" component={Dashboard} />
         <Route path="/quiz" component={Dashboard} />
