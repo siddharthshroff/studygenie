@@ -211,19 +211,19 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-
-        {/* Footer */}
-        <footer className="mt-16 py-8 border-t border-gray-200 bg-white">
-          <div className="text-center text-gray-500">
-            <p className="text-sm">
-              StudySpark - Transform your documents into interactive study materials
-            </p>
-            <p className="text-xs mt-2">
-              Upload PDFs, Word documents, and more to generate AI-powered flashcards and quizzes
-            </p>
-          </div>
-        </footer>
       </div>
+
+      {/* Footer */}
+      <footer className="mt-16 py-8 border-t border-gray-200 bg-white">
+        <div className="text-center text-gray-500">
+          <p className="text-sm">
+            StudySpark - Transform your documents into interactive study materials
+          </p>
+          <p className="text-xs mt-2">
+            Upload PDFs, Word documents, and more to generate AI-powered flashcards and quizzes
+          </p>
+        </div>
+      </footer>
 
       {/* Save Dialog */}
       {showSaveDialog && generatedContent && (
