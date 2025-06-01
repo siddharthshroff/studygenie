@@ -15,7 +15,9 @@ import {
 import multer from "multer";
 import fs from "fs";
 import OpenAI from "openai";
-import PDFExtract from "pdf-extraction";
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const PDFExtract = require("pdf-extraction").PDFExtract;
 import mammoth from "mammoth";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
