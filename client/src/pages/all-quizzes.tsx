@@ -11,7 +11,8 @@ export default function AllQuizzes() {
   const [showAnswers, setShowAnswers] = useState(false);
 
   const { data: studySets, isLoading } = useQuery({
-    queryKey: ["/api/study-sets"],
+    queryKey: ["/api/study-sets", "with-content"],
+    queryFn: () => fetch("/api/study-sets?include=content").then(res => res.json()),
   });
 
   const handleAnswerSelect = (questionId: string, optionIndex: number) => {
