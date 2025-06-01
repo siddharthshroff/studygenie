@@ -45,7 +45,7 @@ export function useCreateFlashcard() {
   
   return useMutation({
     mutationFn: async (data: { studySetId: number; question: string; answer: string; order: number }) => {
-      const response = await apiRequest("POST", "/api/flashcards", data);
+      const response = await apiRequest("/api/flashcards", "POST", data);
       return response.json();
     },
     onSuccess: (_, variables) => {
@@ -87,7 +87,7 @@ export function useCreateQuizQuestion() {
   
   return useMutation({
     mutationFn: async (data: { studySetId: number; question: string; options: string[]; correctAnswer: number; order: number }) => {
-      const response = await apiRequest("POST", "/api/quiz-questions", data);
+      const response = await apiRequest("/api/quiz-questions", "POST", data);
       return response.json();
     },
     onSuccess: (_, variables) => {
