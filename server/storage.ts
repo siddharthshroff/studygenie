@@ -4,6 +4,8 @@ import {
   type Flashcard, type InsertFlashcard, type QuizQuestion, type InsertQuizQuestion,
   type UploadedFile, type InsertUploadedFile
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -37,177 +39,141 @@ export interface IStorage {
   updateUploadedFile(id: number, file: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private studySets: Map<number, StudySet>;
-  private flashcards: Map<number, Flashcard>;
-  private quizQuestions: Map<number, QuizQuestion>;
-  private uploadedFiles: Map<number, UploadedFile>;
-  private currentUserId: number;
-  private currentStudySetId: number;
-  private currentFlashcardId: number;
-  private currentQuizQuestionId: number;
-  private currentFileId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.studySets = new Map();
-    this.flashcards = new Map();
-    this.quizQuestions = new Map();
-    this.uploadedFiles = new Map();
-    this.currentUserId = 1;
-    this.currentStudySetId = 1;
-    this.currentFlashcardId = 1;
-    this.currentQuizQuestionId = 1;
-    this.currentFileId = 1;
-  }
-
-  // User methods
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
-  // Study Set methods
   async getStudySets(): Promise<StudySet[]> {
-    return Array.from(this.studySets.values()).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return await db.select().from(studySets).orderBy(studySets.createdAt);
   }
 
   async getStudySet(id: number): Promise<StudySet | undefined> {
-    return this.studySets.get(id);
+    const [studySet] = await db.select().from(studySets).where(eq(studySets.id, id));
+    return studySet || undefined;
   }
 
   async createStudySet(insertStudySet: InsertStudySet): Promise<StudySet> {
-    const id = this.currentStudySetId++;
-    const studySet: StudySet = { 
-      ...insertStudySet, 
-      id, 
-      createdAt: new Date(),
-      description: insertStudySet.description || null
-    };
-    this.studySets.set(id, studySet);
+    const [studySet] = await db
+      .insert(studySets)
+      .values(insertStudySet)
+      .returning();
     return studySet;
   }
 
   async updateStudySet(id: number, updateData: Partial<InsertStudySet>): Promise<StudySet | undefined> {
-    const existing = this.studySets.get(id);
-    if (!existing) return undefined;
-    
-    const updated: StudySet = { ...existing, ...updateData };
-    this.studySets.set(id, updated);
-    return updated;
+    const [studySet] = await db
+      .update(studySets)
+      .set(updateData)
+      .where(eq(studySets.id, id))
+      .returning();
+    return studySet || undefined;
   }
 
   async deleteStudySet(id: number): Promise<boolean> {
-    return this.studySets.delete(id);
+    const result = await db.delete(studySets).where(eq(studySets.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Flashcard methods
   async getFlashcardsByStudySet(studySetId: number): Promise<Flashcard[]> {
-    return Array.from(this.flashcards.values())
-      .filter(card => card.studySetId === studySetId)
-      .sort((a, b) => a.order - b.order);
+    return await db
+      .select()
+      .from(flashcards)
+      .where(eq(flashcards.studySetId, studySetId))
+      .orderBy(flashcards.order);
   }
 
   async createFlashcard(insertFlashcard: InsertFlashcard): Promise<Flashcard> {
-    const id = this.currentFlashcardId++;
-    const flashcard: Flashcard = { 
-      ...insertFlashcard, 
-      id, 
-      order: insertFlashcard.order || 0 
-    };
-    this.flashcards.set(id, flashcard);
+    const [flashcard] = await db
+      .insert(flashcards)
+      .values(insertFlashcard)
+      .returning();
     return flashcard;
   }
 
   async updateFlashcard(id: number, updateData: Partial<InsertFlashcard>): Promise<Flashcard | undefined> {
-    const existing = this.flashcards.get(id);
-    if (!existing) return undefined;
-    
-    const updated: Flashcard = { ...existing, ...updateData };
-    this.flashcards.set(id, updated);
-    return updated;
+    const [flashcard] = await db
+      .update(flashcards)
+      .set(updateData)
+      .where(eq(flashcards.id, id))
+      .returning();
+    return flashcard || undefined;
   }
 
   async deleteFlashcard(id: number): Promise<boolean> {
-    return this.flashcards.delete(id);
+    const result = await db.delete(flashcards).where(eq(flashcards.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // Quiz Question methods
   async getQuizQuestionsByStudySet(studySetId: number): Promise<QuizQuestion[]> {
-    return Array.from(this.quizQuestions.values())
-      .filter(question => question.studySetId === studySetId)
-      .sort((a, b) => a.order - b.order);
+    return await db
+      .select()
+      .from(quizQuestions)
+      .where(eq(quizQuestions.studySetId, studySetId))
+      .orderBy(quizQuestions.order);
   }
 
   async createQuizQuestion(insertQuestion: InsertQuizQuestion): Promise<QuizQuestion> {
-    const id = this.currentQuizQuestionId++;
-    const question: QuizQuestion = { 
-      ...insertQuestion, 
-      id, 
-      order: insertQuestion.order || 0 
-    };
-    this.quizQuestions.set(id, question);
+    const [question] = await db
+      .insert(quizQuestions)
+      .values(insertQuestion)
+      .returning();
     return question;
   }
 
   async updateQuizQuestion(id: number, updateData: Partial<InsertQuizQuestion>): Promise<QuizQuestion | undefined> {
-    const existing = this.quizQuestions.get(id);
-    if (!existing) return undefined;
-    
-    const updated: QuizQuestion = { ...existing, ...updateData };
-    this.quizQuestions.set(id, updated);
-    return updated;
+    const [question] = await db
+      .update(quizQuestions)
+      .set(updateData)
+      .where(eq(quizQuestions.id, id))
+      .returning();
+    return question || undefined;
   }
 
   async deleteQuizQuestion(id: number): Promise<boolean> {
-    return this.quizQuestions.delete(id);
+    const result = await db.delete(quizQuestions).where(eq(quizQuestions.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
-  // File methods
   async getUploadedFiles(): Promise<UploadedFile[]> {
-    return Array.from(this.uploadedFiles.values()).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return await db.select().from(uploadedFiles).orderBy(uploadedFiles.createdAt);
   }
 
   async getUploadedFile(id: number): Promise<UploadedFile | undefined> {
-    return this.uploadedFiles.get(id);
+    const [file] = await db.select().from(uploadedFiles).where(eq(uploadedFiles.id, id));
+    return file || undefined;
   }
 
   async createUploadedFile(insertFile: InsertUploadedFile): Promise<UploadedFile> {
-    const id = this.currentFileId++;
-    const file: UploadedFile = { 
-      ...insertFile, 
-      id, 
-      createdAt: new Date(),
-      status: insertFile.status || "pending",
-      extractedText: insertFile.extractedText || null
-    };
-    this.uploadedFiles.set(id, file);
+    const [file] = await db
+      .insert(uploadedFiles)
+      .values(insertFile)
+      .returning();
     return file;
   }
 
   async updateUploadedFile(id: number, updateData: Partial<InsertUploadedFile>): Promise<UploadedFile | undefined> {
-    const existing = this.uploadedFiles.get(id);
-    if (!existing) return undefined;
-    
-    const updated: UploadedFile = { ...existing, ...updateData };
-    this.uploadedFiles.set(id, updated);
-    return updated;
+    const [file] = await db
+      .update(uploadedFiles)
+      .set(updateData)
+      .where(eq(uploadedFiles.id, id))
+      .returning();
+    return file || undefined;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
