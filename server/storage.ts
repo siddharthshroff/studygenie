@@ -5,7 +5,7 @@ import {
   type UploadedFile, type InsertUploadedFile
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -60,12 +60,12 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getStudySets(): Promise<StudySet[]> {
-    return await db.select().from(studySets).orderBy(studySets.createdAt);
+  async getStudySets(userId: number): Promise<StudySet[]> {
+    return await db.select().from(studySets).where(eq(studySets.userId, userId)).orderBy(studySets.createdAt);
   }
 
-  async getStudySet(id: number): Promise<StudySet | undefined> {
-    const [studySet] = await db.select().from(studySets).where(eq(studySets.id, id));
+  async getStudySet(id: number, userId: number): Promise<StudySet | undefined> {
+    const [studySet] = await db.select().from(studySets).where(and(eq(studySets.id, id), eq(studySets.userId, userId)));
     return studySet || undefined;
   }
 
@@ -151,12 +151,12 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount || 0) > 0;
   }
 
-  async getUploadedFiles(): Promise<UploadedFile[]> {
-    return await db.select().from(uploadedFiles).orderBy(uploadedFiles.uploadedAt);
+  async getUploadedFiles(userId: number): Promise<UploadedFile[]> {
+    return await db.select().from(uploadedFiles).where(eq(uploadedFiles.userId, userId)).orderBy(uploadedFiles.uploadedAt);
   }
 
-  async getUploadedFile(id: number): Promise<UploadedFile | undefined> {
-    const [file] = await db.select().from(uploadedFiles).where(eq(uploadedFiles.id, id));
+  async getUploadedFile(id: number, userId: number): Promise<UploadedFile | undefined> {
+    const [file] = await db.select().from(uploadedFiles).where(and(eq(uploadedFiles.id, id), eq(uploadedFiles.userId, userId)));
     return file || undefined;
   }
 

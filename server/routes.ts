@@ -388,15 +388,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all uploaded files with their study materials
-  app.get('/api/files', isAuthenticated, async (req, res) => {
+  app.get('/api/files', isAuthenticated, async (req: any, res) => {
     try {
-      const files = await storage.getUploadedFiles();
+      const userId = req.session.userId;
+      const files = await storage.getUploadedFiles(userId);
       
       // Get study sets and associated flashcards/quizzes for each file
       const filesWithStudyMaterials = await Promise.all(
         files.map(async (file) => {
           if (file.studySetId) {
-            const studySet = await storage.getStudySet(file.studySetId);
+            const studySet = await storage.getStudySet(file.studySetId, userId);
             if (studySet) {
               const flashcards = await storage.getFlashcardsByStudySet(studySet.id);
               const quizQuestions = await storage.getQuizQuestionsByStudySet(studySet.id);
@@ -523,10 +524,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Study Sets CRUD
-  app.get("/api/study-sets", async (req, res) => {
+  app.get("/api/study-sets", isAuthenticated, async (req: any, res) => {
     try {
       const includeContent = req.query.include === 'content';
-      const studySets = await storage.getStudySets();
+      const userId = req.session.userId;
+      const studySets = await storage.getStudySets(userId);
       
       if (includeContent) {
         // Include flashcards and quiz questions for each study set
