@@ -50,7 +50,7 @@ export function Sidebar() {
         </nav>
 
         {/* User Profile */}
-        <div className="px-4 py-4 border-t border-gray-200">
+        <div className="px-4 py-4 border-t border-gray-200 space-y-3">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
               <i className="fas fa-user text-gray-600"></i>
@@ -60,6 +60,13 @@ export function Sidebar() {
               <p className="text-xs text-gray-500">Free Plan</p>
             </div>
           </div>
+          <button 
+            className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+            onClick={() => window.location.href = '/api/logout'}
+          >
+            <i className="fas fa-sign-out-alt w-5 mr-3 text-gray-500"></i>
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
     </div>
