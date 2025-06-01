@@ -330,22 +330,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate AI content from file
-  app.post("/api/generate/:fileId", async (req, res) => {
+  app.post("/api/files/:id/generate", isAuthenticated, async (req: any, res) => {
     try {
-      const fileId = parseInt(req.params.fileId);
-      const file = await storage.getUploadedFile(fileId);
+      const userId = req.session.userId;
+      const fileId = parseInt(req.params.id);
+      const file = await storage.getUploadedFile(fileId, userId);
       
       if (!file || !file.extractedText) {
         return res.status(400).json({ error: "File not found or text not extracted" });
       }
 
-      console.log('Extracted text for generation:', file.extractedText?.substring(0, 200) + '...');
+      console.log('Starting content generation for file:', fileId);
+      console.log('Extracted text preview:', file.extractedText?.substring(0, 200) + '...');
       
       // Generate content using AI
+      console.log('Calling OpenAI API for content generation...');
       const [generatedFlashcards, generatedQuizQuestions] = await Promise.all([
         generateFlashcards(file.extractedText),
         generateQuizQuestions(file.extractedText)
       ]);
+      
+      console.log(`Generated ${generatedFlashcards.length} flashcards and ${generatedQuizQuestions.length} quiz questions`);
 
       // Create a study set for this file
       const studySet = await storage.createStudySet({
