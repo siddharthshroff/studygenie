@@ -311,6 +311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileId: fileId
       });
 
+      // Link the file to the study set
+      await storage.updateUploadedFile(fileId, { studySetId: studySet.id });
+
       // Save flashcards to database
       const savedFlashcards = [];
       for (const flashcard of generatedFlashcards) {
