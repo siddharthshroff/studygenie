@@ -171,12 +171,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/logout', (req, res) => {
+  app.get('/api/logout', (req, res) => {
     req.session.destroy((err) => {
       if (err) {
+        console.error("Logout error:", err);
         return res.status(500).json({ message: "Could not log out" });
       }
-      res.json({ message: "Logged out successfully" });
+      res.clearCookie('connect.sid');
+      res.redirect('/login');
     });
   });
 
