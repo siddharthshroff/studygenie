@@ -36,53 +36,15 @@ async function extractTextFromFile(filePath: string, mimeType: string): Promise<
     switch (mimeType) {
       case 'application/pdf':
         try {
-          const pdf2pic = await import('pdf2pic');
-          const convert = pdf2pic.fromPath(filePath, {
-            density: 100,
-            saveFilename: "page",
-            savePath: "./temp/",
-            format: "png",
-            width: 2048,
-            height: 2048
-          });
+          const { pdf } = await import('pdf-extraction');
+          const pdfBuffer = fs.readFileSync(filePath);
+          const data = await pdf(pdfBuffer);
           
-          // Convert first few pages to images (limit to 3 pages for cost control)
-          const results = await convert.bulk(-1, { responseType: "buffer" });
-          let fullText = '';
+          // Extract text content
+          let cleanText = data.text || '';
           
-          // Use OpenAI Vision to read text from each page
-          for (let i = 0; i < Math.min(results.length, 3); i++) {
-            const pageBuffer = results[i].buffer;
-            const base64Image = pageBuffer.toString('base64');
-            
-            const response = await openai.chat.completions.create({
-              model: "gpt-4o",
-              messages: [
-                {
-                  role: "user",
-                  content: [
-                    {
-                      type: "text",
-                      text: "Extract all text content from this PDF page. Return only the actual text content, maintaining paragraph structure but without any formatting or commentary."
-                    },
-                    {
-                      type: "image_url",
-                      image_url: {
-                        url: `data:image/png;base64,${base64Image}`
-                      }
-                    }
-                  ]
-                }
-              ],
-              max_tokens: 2000
-            });
-            
-            const pageText = response.choices[0]?.message?.content || '';
-            fullText += pageText + '\n\n';
-          }
-          
-          // Clean up extracted text
-          let cleanText = fullText
+          // Clean up extracted text and normalize whitespace
+          cleanText = cleanText
             .replace(/\s+/g, ' ')
             .trim();
           
