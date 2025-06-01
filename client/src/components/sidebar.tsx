@@ -17,7 +17,7 @@ export function Sidebar() {
       <div className="flex flex-col w-80 bg-white border-r border-gray-200">
         {/* Logo & Brand */}
         <div className="flex items-center px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
+          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <img 
               src={Screenshot_2025_05_31_at_7_55_45_PM} 
               alt="StudySpark AI Logo" 
@@ -27,7 +27,7 @@ export function Sidebar() {
               <h1 className="text-xl font-bold text-gray-900">StudySpark AI</h1>
               <p className="text-sm text-gray-500">AI Study Assistant</p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Navigation */}
