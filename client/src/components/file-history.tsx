@@ -325,21 +325,18 @@ export function FileHistory() {
                                   );
                                 })}
                                 
-                                {file.studySet.quizQuestions.length > 3 && !showAllQuestions.has(file.id) && (
-                                  <div 
-                                    className="text-center py-2 text-sm text-blue-600 hover:text-blue-800 cursor-pointer underline"
-                                    onClick={() => toggleShowAllQuestions(file.id)}
-                                  >
-                                    +{file.studySet.quizQuestions.length - 3} more questions
-                                  </div>
-                                )}
-                                
-                                {showAllQuestions.has(file.id) && file.studySet.quizQuestions.length > 3 && (
-                                  <div 
-                                    className="text-center py-2 text-sm text-blue-600 hover:text-blue-800 cursor-pointer underline"
-                                    onClick={() => toggleShowAllQuestions(file.id)}
-                                  >
-                                    Show fewer questions
+                                {file.studySet.quizQuestions.length > 3 && (
+                                  <div className="text-center">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => toggleShowAllQuestions(file.id)}
+                                    >
+                                      {showAllQuestions.has(file.id) 
+                                        ? 'Show fewer questions' 
+                                        : `+${file.studySet.quizQuestions.length - 3} more questions`
+                                      }
+                                    </Button>
                                   </div>
                                 )}
                               </div>
