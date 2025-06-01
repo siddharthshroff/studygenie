@@ -105,7 +105,7 @@ export function FileHistory() {
         <Badge variant="secondary">{files.length} files</Badge>
       </div>
 
-      <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-200px)] pr-2">
+      <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-280px)] pr-2 pb-8">
         {files.map((file) => (
           <Card key={file.id} className="border border-gray-200">
             <Collapsible>
