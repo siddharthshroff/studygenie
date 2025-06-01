@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, FileText, Calendar, Eye, Trash2 } from "lucide-react";
+import { ChevronDown, FileText, Calendar, Eye, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { AddContentDialog } from "./add-content-dialog";
 import type { UploadedFile, StudySet, Flashcard, QuizQuestion } from "@shared/schema";
 
 interface FileWithStudySet extends UploadedFile {
@@ -235,6 +236,21 @@ export function FileHistory() {
                           </TabsList>
 
                           <TabsContent value="flashcards" className="mt-4">
+                            <div className="flex justify-between items-center mb-4">
+                              <span className="text-sm text-gray-600">
+                                {file.studySet.flashcards?.length || 0} flashcards
+                              </span>
+                              <AddContentDialog
+                                studySetId={file.studySet.id}
+                                type="flashcard"
+                                trigger={
+                                  <Button variant="outline" size="sm">
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Add Flashcard
+                                  </Button>
+                                }
+                              />
+                            </div>
                             {file.studySet.flashcards && file.studySet.flashcards.length > 0 ? (
                               <div className="space-y-4">
                                 <div className="grid gap-4 md:grid-cols-2">
@@ -296,6 +312,21 @@ export function FileHistory() {
                           </TabsContent>
 
                           <TabsContent value="quiz" className="mt-4">
+                            <div className="flex justify-between items-center mb-4">
+                              <span className="text-sm text-gray-600">
+                                {file.studySet.quizQuestions?.length || 0} quiz questions
+                              </span>
+                              <AddContentDialog
+                                studySetId={file.studySet.id}
+                                type="quiz"
+                                trigger={
+                                  <Button variant="outline" size="sm">
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Add Quiz Question
+                                  </Button>
+                                }
+                              />
+                            </div>
                             {file.studySet.quizQuestions && file.studySet.quizQuestions.length > 0 ? (
                               <div className="space-y-4">
                                 <div className="flex justify-between items-center">
