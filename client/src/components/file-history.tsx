@@ -17,6 +17,8 @@ interface FileWithStudySet extends UploadedFile {
 
 export function FileHistory() {
   const [expandedFiles, setExpandedFiles] = useState<Set<number>>(new Set());
+  const [showAllFlashcards, setShowAllFlashcards] = useState<Set<number>>(new Set());
+  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
 
   const { data: files = [], isLoading } = useQuery<FileWithStudySet[]>({
     queryKey: ['/api/files']
@@ -30,6 +32,26 @@ export function FileHistory() {
       newExpanded.add(fileId);
     }
     setExpandedFiles(newExpanded);
+  };
+
+  const toggleShowAllFlashcards = (fileId: number) => {
+    const newShowAll = new Set(showAllFlashcards);
+    if (newShowAll.has(fileId)) {
+      newShowAll.delete(fileId);
+    } else {
+      newShowAll.add(fileId);
+    }
+    setShowAllFlashcards(newShowAll);
+  };
+
+  const toggleFlippedCard = (cardId: string) => {
+    const newFlipped = new Set(flippedCards);
+    if (newFlipped.has(cardId)) {
+      newFlipped.delete(cardId);
+    } else {
+      newFlipped.add(cardId);
+    }
+    setFlippedCards(newFlipped);
   };
 
   const getFileIcon = (mimeType: string) => {
@@ -140,16 +162,57 @@ export function FileHistory() {
 
                           <TabsContent value="flashcards" className="mt-4">
                             {file.studySet.flashcards && file.studySet.flashcards.length > 0 ? (
-                              <div className="grid gap-4 md:grid-cols-2">
-                                {file.studySet.flashcards.slice(0, 4).map((flashcard) => (
-                                  <div key={flashcard.id} className="bg-white border rounded-lg p-4">
-                                    <div className="font-medium text-sm mb-2">Q: {flashcard.question}</div>
-                                    <div className="text-sm text-gray-600">A: {flashcard.answer}</div>
-                                  </div>
-                                ))}
+                              <div className="space-y-4">
+                                <div className="grid gap-4 md:grid-cols-2">
+                                  {(showAllFlashcards.has(file.id) 
+                                    ? file.studySet.flashcards 
+                                    : file.studySet.flashcards.slice(0, 4)
+                                  ).map((flashcard: any) => {
+                                    const cardId = `${file.id}-${flashcard.id}`;
+                                    const isFlipped = flippedCards.has(cardId);
+                                    
+                                    return (
+                                      <div 
+                                        key={flashcard.id} 
+                                        className="relative h-32 cursor-pointer perspective-1000"
+                                        onClick={() => toggleFlippedCard(cardId)}
+                                      >
+                                        <div className={`absolute inset-0 w-full h-full transition-transform duration-600 transform-style-preserve-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
+                                          {/* Front of card - Question */}
+                                          <div className="absolute inset-0 w-full h-full bg-white border-2 border-blue-200 rounded-lg p-4 backface-hidden flex flex-col justify-center">
+                                            <div className="text-xs text-blue-600 mb-2 font-semibold">QUESTION</div>
+                                            <div className="text-sm font-medium text-gray-900 text-center">
+                                              {flashcard.question}
+                                            </div>
+                                            <div className="text-xs text-gray-400 mt-2 text-center">Click to reveal answer</div>
+                                          </div>
+                                          
+                                          {/* Back of card - Answer */}
+                                          <div className="absolute inset-0 w-full h-full bg-blue-50 border-2 border-blue-300 rounded-lg p-4 backface-hidden rotate-y-180 flex flex-col justify-center">
+                                            <div className="text-xs text-blue-600 mb-2 font-semibold">ANSWER</div>
+                                            <div className="text-sm text-gray-700 text-center">
+                                              {flashcard.answer}
+                                            </div>
+                                            <div className="text-xs text-gray-400 mt-2 text-center">Click to see question</div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                
                                 {file.studySet.flashcards.length > 4 && (
-                                  <div className="col-span-2 text-center py-2 text-sm text-gray-500">
-                                    +{file.studySet.flashcards.length - 4} more flashcards
+                                  <div className="text-center">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => toggleShowAllFlashcards(file.id)}
+                                    >
+                                      {showAllFlashcards.has(file.id) 
+                                        ? 'Show fewer flashcards' 
+                                        : `+${file.studySet.flashcards.length - 4} more flashcards`
+                                      }
+                                    </Button>
                                   </div>
                                 )}
                               </div>
