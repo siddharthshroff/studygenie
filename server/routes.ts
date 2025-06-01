@@ -36,15 +36,36 @@ async function extractTextFromFile(filePath: string, mimeType: string): Promise<
     switch (mimeType) {
       case 'application/pdf':
         try {
-          const { pdf } = await import('pdf-extraction');
-          const pdfBuffer = fs.readFileSync(filePath);
-          const data = await pdf(pdfBuffer);
+          const pdf = await import('pdf-poppler');
           
-          // Extract text content
-          let cleanText = data.text || '';
+          // Convert PDF to text using pdf-poppler
+          const options = {
+            format: 'raw',
+            out_dir: './temp',
+            out_prefix: 'pdf_text',
+            page: null // Extract all pages
+          };
+          
+          const res = await pdf.convert(filePath, options);
+          
+          // Read the generated text files
+          let fullText = '';
+          for (let i = 1; i <= res; i++) {
+            try {
+              const textPath = `./temp/pdf_text-${i}.txt`;
+              if (fs.existsSync(textPath)) {
+                const pageText = fs.readFileSync(textPath, 'utf-8');
+                fullText += pageText + ' ';
+                // Clean up the temporary file
+                fs.unlinkSync(textPath);
+              }
+            } catch (pageError) {
+              console.warn(`Could not read page ${i}:`, pageError);
+            }
+          }
           
           // Clean up extracted text and normalize whitespace
-          cleanText = cleanText
+          let cleanText = fullText
             .replace(/\s+/g, ' ')
             .trim();
           
