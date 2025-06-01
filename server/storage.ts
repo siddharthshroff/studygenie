@@ -12,6 +12,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserPassword(id: number, hashedPassword: string): Promise<void>;
 
   // Study Set methods
   getStudySets(): Promise<StudySet[]>;
@@ -173,6 +174,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(uploadedFiles.id, id))
       .returning();
     return file || undefined;
+  }
+
+  async updateUserPassword(id: number, hashedPassword: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ password: hashedPassword })
+      .where(eq(users.id, id));
   }
 }
 
