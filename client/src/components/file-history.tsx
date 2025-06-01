@@ -19,6 +19,8 @@ export function FileHistory() {
   const [expandedFiles, setExpandedFiles] = useState<Set<number>>(new Set());
   const [showAllFlashcards, setShowAllFlashcards] = useState<Set<number>>(new Set());
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
+  const [showAnswers, setShowAnswers] = useState<Set<number>>(new Set());
 
   const { data: files = [], isLoading } = useQuery<FileWithStudySet[]>({
     queryKey: ['/api/files']
@@ -52,6 +54,23 @@ export function FileHistory() {
       newFlipped.add(cardId);
     }
     setFlippedCards(newFlipped);
+  };
+
+  const selectAnswer = (questionId: string, answerIndex: number) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionId]: answerIndex
+    }));
+  };
+
+  const toggleShowAnswers = (fileId: number) => {
+    const newShowAnswers = new Set(showAnswers);
+    if (newShowAnswers.has(fileId)) {
+      newShowAnswers.delete(fileId);
+    } else {
+      newShowAnswers.add(fileId);
+    }
+    setShowAnswers(newShowAnswers);
   };
 
   const getFileIcon = (mimeType: string) => {
@@ -224,27 +243,77 @@ export function FileHistory() {
                           <TabsContent value="quiz" className="mt-4">
                             {file.studySet.quizQuestions && file.studySet.quizQuestions.length > 0 ? (
                               <div className="space-y-4">
-                                {file.studySet.quizQuestions.slice(0, 3).map((question, index) => (
-                                  <div key={question.id} className="bg-white border rounded-lg p-4">
-                                    <div className="font-medium text-sm mb-3">
-                                      {index + 1}. {question.question}
-                                    </div>
-                                    <div className="space-y-1">
-                                      {question.options.map((option, optionIndex) => (
-                                        <div 
-                                          key={optionIndex}
-                                          className={`text-sm p-2 rounded ${
-                                            optionIndex === question.correctAnswer 
-                                              ? 'bg-green-50 text-green-800 font-medium' 
-                                              : 'bg-gray-50 text-gray-600'
-                                          }`}
-                                        >
-                                          {String.fromCharCode(65 + optionIndex)}. {option}
-                                        </div>
-                                      ))}
-                                    </div>
+                                <div className="flex justify-between items-center">
+                                  <div className="text-sm text-gray-600">
+                                    Answer the questions below and click "Show Answers" to see results
                                   </div>
-                                ))}
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => toggleShowAnswers(file.id)}
+                                  >
+                                    {showAnswers.has(file.id) ? 'Hide Answers' : 'Show Answers'}
+                                  </Button>
+                                </div>
+                                
+                                {file.studySet.quizQuestions.slice(0, 3).map((question, index) => {
+                                  const questionId = `${file.id}-${question.id}`;
+                                  const selectedAnswer = selectedAnswers[questionId];
+                                  const showAnswer = showAnswers.has(file.id);
+                                  
+                                  return (
+                                    <div key={question.id} className="bg-white border rounded-lg p-4">
+                                      <div className="font-medium text-sm mb-3">
+                                        {index + 1}. {question.question}
+                                      </div>
+                                      <div className="space-y-2">
+                                        {question.options.map((option, optionIndex) => {
+                                          const isSelected = selectedAnswer === optionIndex;
+                                          const isCorrect = optionIndex === question.correctAnswer;
+                                          const isWrong = showAnswer && isSelected && !isCorrect;
+                                          
+                                          let optionClass = 'text-sm p-3 rounded border cursor-pointer transition-colors ';
+                                          
+                                          if (showAnswer) {
+                                            if (isCorrect) {
+                                              optionClass += 'bg-green-50 border-green-200 text-green-800 font-medium';
+                                            } else if (isWrong) {
+                                              optionClass += 'bg-red-50 border-red-200 text-red-800';
+                                            } else {
+                                              optionClass += 'bg-gray-50 border-gray-200 text-gray-600';
+                                            }
+                                          } else {
+                                            if (isSelected) {
+                                              optionClass += 'bg-blue-50 border-blue-200 text-blue-800 font-medium';
+                                            } else {
+                                              optionClass += 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100';
+                                            }
+                                          }
+                                          
+                                          return (
+                                            <div 
+                                              key={optionIndex}
+                                              className={optionClass}
+                                              onClick={() => !showAnswer && selectAnswer(questionId, optionIndex)}
+                                            >
+                                              <span className="font-medium mr-2">
+                                                {String.fromCharCode(65 + optionIndex)}.
+                                              </span>
+                                              {option}
+                                              {showAnswer && isCorrect && (
+                                                <span className="ml-2 text-green-600">✓</span>
+                                              )}
+                                              {showAnswer && isWrong && (
+                                                <span className="ml-2 text-red-600">✗</span>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                                
                                 {file.studySet.quizQuestions.length > 3 && (
                                   <div className="text-center py-2 text-sm text-gray-500">
                                     +{file.studySet.quizQuestions.length - 3} more questions

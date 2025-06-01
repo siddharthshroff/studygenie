@@ -44,7 +44,6 @@ export default function Dashboard() {
           </div>
         </div>
       </header>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
@@ -112,7 +111,7 @@ export default function Dashboard() {
             <div className="border-b border-gray-200 px-6 pt-6">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="upload">Upload & Generate</TabsTrigger>
-                <TabsTrigger value="history">File History</TabsTrigger>
+                <TabsTrigger value="history">Past Uploads</TabsTrigger>
               </TabsList>
             </div>
             
@@ -228,7 +227,6 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -242,7 +240,6 @@ export default function Dashboard() {
           </div>
         </div>
       </footer>
-
       {/* Save Dialog */}
       {showSaveDialog && generatedContent && (
         <SaveDialog
