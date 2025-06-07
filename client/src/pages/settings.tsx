@@ -90,7 +90,7 @@ export default function Settings() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-                <h1 className="text-xl font-bold text-blue-600">StudySpark AI</h1>
+                <h1 className="text-xl font-bold text-blue-600">StudyGenie</h1>
                 <span className="ml-2 text-sm text-gray-500">AI Study Assistant</span>
               </Link>
             </div>
