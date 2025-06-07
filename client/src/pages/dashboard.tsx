@@ -38,7 +38,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-                <h1 className="text-xl font-bold text-blue-600">StudySpark AI</h1>
+                <h1 className="text-xl font-bold text-blue-600">StudyGenie</h1>
                 <span className="ml-2 text-sm text-gray-500">AI Study Assistant</span>
               </Link>
             </div>
@@ -58,7 +58,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome to StudySpark
+                Welcome to StudyGenie
               </h1>
               <p className="text-gray-600">
                 Transform your documents into interactive study materials with AI

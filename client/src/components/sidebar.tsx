@@ -20,11 +20,11 @@ export function Sidebar() {
           <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <img 
               src={Screenshot_2025_05_31_at_7_55_45_PM} 
-              alt="StudySpark AI Logo" 
+              alt="StudyGenie Logo" 
               className="w-10 h-10"
             />
             <div>
-              <h1 className="text-xl font-bold text-gray-900">StudySpark AI</h1>
+              <h1 className="text-xl font-bold text-gray-900">StudyGenie</h1>
               <p className="text-sm text-gray-500">AI Study Assistant</p>
             </div>
           </Link>
