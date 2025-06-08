@@ -205,22 +205,31 @@ export default function Dashboard() {
 
         {/* AI Generation Section */}
         {generatedContent && (
-          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                    <i className="fas fa-magic text-purple-600 mr-3"></i>
+          <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="p-3 sm:p-6 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center">
+                    <i className="fas fa-magic text-purple-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>
                     AI-Generated Study Content
                   </h3>
-                  <p className="text-gray-600 mt-1">Review and edit your AI-generated flashcards and quizzes</p>
+                  <p className="text-sm sm:text-base text-gray-600 mt-1">Review and edit your AI-generated flashcards and quizzes</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" onClick={() => setGeneratedContent(null)}>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="w-full sm:w-auto text-xs sm:text-sm"
+                    onClick={() => setGeneratedContent(null)}
+                  >
                     <i className="fas fa-sync-alt mr-2"></i>
                     Regenerate
                   </Button>
-                  <Button onClick={handleSave}>
+                  <Button 
+                    size="sm"
+                    className="w-full sm:w-auto text-xs sm:text-sm"
+                    onClick={handleSave}
+                  >
                     <i className="fas fa-save mr-2"></i>
                     Save Set
                   </Button>
@@ -228,25 +237,25 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="p-6">
+            <div className="p-3 sm:p-6">
               <Tabs defaultValue="flashcards" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="flashcards">
+                  <TabsTrigger value="flashcards" className="text-xs sm:text-sm">
                     Flashcards ({generatedContent.flashcards?.length || 0})
                   </TabsTrigger>
-                  <TabsTrigger value="quiz">
+                  <TabsTrigger value="quiz" className="text-xs sm:text-sm">
                     Quiz ({generatedContent.quizQuestions?.length || 0} questions)
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="flashcards" className="mt-6">
+                <TabsContent value="flashcards" className="mt-4 sm:mt-6">
                   <FlashcardGrid 
                     flashcards={generatedContent.flashcards || []}
                     isGenerated={true}
                   />
                 </TabsContent>
                 
-                <TabsContent value="quiz" className="mt-6">
+                <TabsContent value="quiz" className="mt-4 sm:mt-6">
                   <QuizView 
                     questions={generatedContent.quizQuestions || []}
                     isGenerated={true}

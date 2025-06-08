@@ -136,17 +136,17 @@ export function FileUploader({ onContentGenerated }: FileUploaderProps) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="p-6 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <i className="fas fa-upload text-primary-600 mr-3"></i>
+      <div className="p-4 sm:p-6 border-b border-gray-200">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center">
+          <i className="fas fa-upload text-primary-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>
           Upload Study Materials
         </h3>
-        <p className="text-gray-600 mt-1">Drop your files or browse to upload PDF, DOCX, TXT, PPTX, or MP4 files</p>
+        <p className="text-sm sm:text-base text-gray-600 mt-1">Drop your files or browse to upload PDF, DOCX, TXT, PPTX, or MP4 files</p>
       </div>
       
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div 
-          className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
+          className={`border-2 border-dashed rounded-xl p-4 sm:p-8 text-center transition-colors cursor-pointer ${
             isDragOver 
               ? "border-primary-400 bg-primary-50" 
               : "border-gray-300 hover:border-primary-400"
@@ -156,12 +156,12 @@ export function FileUploader({ onContentGenerated }: FileUploaderProps) {
           onDrop={handleDrop}
           onClick={openFileDialog}
         >
-          <div className="animate-bounce mb-4">
-            <i className="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+          <div className="animate-bounce mb-3 sm:mb-4">
+            <i className="fas fa-cloud-upload-alt text-3xl sm:text-4xl text-gray-400"></i>
           </div>
-          <h4 className="text-lg font-medium text-gray-900 mb-2">Drop files here or click to browse</h4>
-          <p className="text-gray-600 mb-4">Supports PDF, DOCX, TXT, PPTX, and MP4 files up to 50MB</p>
-          <button className="bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition-colors">
+          <h4 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Drop files here or click to browse</h4>
+          <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">Supports PDF, DOCX, TXT, PPTX, and MP4 files up to 50MB</p>
+          <button className="bg-primary-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-medium hover:bg-primary-700 transition-colors">
             <i className="fas fa-folder-open mr-2"></i>
             Choose Files
           </button>
