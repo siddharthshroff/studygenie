@@ -34,41 +34,51 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Navigation Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center min-w-0">
               <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-                <h1 className="text-xl font-bold text-blue-600">StudyGenie</h1>
-                <span className="ml-2 text-sm text-gray-500">AI Study Assistant</span>
+                <h1 className="text-lg sm:text-xl font-bold text-blue-600 truncate">StudyGenie</h1>
+                <span className="hidden sm:inline-block ml-2 text-sm text-gray-500">AI Study Assistant</span>
               </Link>
             </div>
-            <div className="flex items-center space-x-4">
-              <a href="/settings" className="text-sm text-gray-500 hover:text-gray-700">Settings</a>
-              <span className="text-sm text-gray-600">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <a href="/settings" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700">Settings</a>
+              <span className="hidden md:inline-block text-xs sm:text-sm text-gray-600 max-w-[120px] truncate">
                 {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user?.email || 'User'}
               </span>
-              <a href="/api/logout" className="text-sm text-gray-500 hover:text-gray-700">Sign Out</a>
+              <a href="/api/logout" className="text-xs sm:text-sm text-gray-500 hover:text-gray-700">Sign Out</a>
             </div>
           </div>
         </div>
       </header>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                 Welcome to StudyGenie
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Transform your documents into interactive study materials with AI
               </p>
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => window.location.href = '/flashcards'}>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="w-full sm:w-auto text-xs sm:text-sm"
+                onClick={() => window.location.href = '/flashcards'}
+              >
                 View All Flashcards
               </Button>
-              <Button variant="outline" onClick={() => window.location.href = '/quiz'}>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="w-full sm:w-auto text-xs sm:text-sm"
+                onClick={() => window.location.href = '/quiz'}
+              >
                 Take Quiz
               </Button>
             </div>
@@ -76,8 +86,8 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Study Sets</p>
@@ -92,7 +102,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Flashcards</p>
@@ -109,7 +119,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Study Time</p>
@@ -128,22 +138,22 @@ export default function Dashboard() {
         {/* Main Content Tabs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <Tabs defaultValue="upload" className="w-full">
-            <div className="border-b border-gray-200 px-6 pt-6">
+            <div className="border-b border-gray-200 px-3 sm:px-6 pt-4 sm:pt-6">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="upload">Upload & Generate</TabsTrigger>
-                <TabsTrigger value="history">Past Uploads</TabsTrigger>
+                <TabsTrigger value="upload" className="text-xs sm:text-sm">Upload & Generate</TabsTrigger>
+                <TabsTrigger value="history" className="text-xs sm:text-sm">Past Uploads</TabsTrigger>
               </TabsList>
             </div>
             
-            <TabsContent value="upload" className="p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <TabsContent value="upload" className="p-3 sm:p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Upload Section */}
                 <FileUploader onContentGenerated={handleContentGenerated} />
 
                 {/* Recent Activity */}
-                <div className="bg-gray-50 rounded-xl border border-gray-100 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-4">
-                    <i className="fas fa-history text-secondary-600 mr-3"></i>
+                <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center mb-4">
+                    <i className="fas fa-history text-secondary-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>
                     Recent Activity
                   </h3>
                   {isLoading ? (
@@ -187,7 +197,7 @@ export default function Dashboard() {
               </div>
             </TabsContent>
             
-            <TabsContent value="history" className="p-6">
+            <TabsContent value="history" className="p-3 sm:p-6">
               <FileHistory />
             </TabsContent>
           </Tabs>
