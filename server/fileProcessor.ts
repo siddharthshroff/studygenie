@@ -106,6 +106,10 @@ export function getFileExtension(filename: string): string {
 
 export function estimateReadingTime(text: string): number {
   const wordsPerMinute = 200;
-  const wordCount = text.split(/\s+/).length;
+  const cleaned = text.trim();
+  if (cleaned === "") {
+    return 0;
+  }
+  const wordCount = cleaned.split(/\s+/).length;
   return Math.ceil(wordCount / wordsPerMinute);
 }
